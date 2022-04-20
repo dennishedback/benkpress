@@ -1,5 +1,5 @@
 # pdfsupervisors
-PyQt/PDFJs GUI for creating and evaluating PDF file/page/sentence targets using sklearn compatible pipelines
+PyQt/PDFJs GUI for creating and evaluating classifiers for PDF file/page/sentence targets using sklearn compatible pipelines
 
 ## Usage
 
