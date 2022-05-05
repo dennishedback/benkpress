@@ -19,18 +19,32 @@
 """
 phdata
 
-Usage: pdfsupervisors <preproc> <
+Usage: pdfsupervisors <pdfdir> <pipeline> <outfile>
 
 Options:
-  --eval        Only evaluate pipeline, do not fit.
-  --filewise    Feed data into pipeline on a per-file basis. Default is per-page basis. NOT IMPLEMENTED
   -o --output   Data used to fit/evaluate the pipeline. Written to stdout if not specified.
   -h --help     Show this screen.
 
+Parameters:
+  <pdfdir>      Directory containing your set of PDF files.
+  <pipeline>    Joblib serialized sklearn compatible pipeline, possibly
+                containing Intermediaries from the pdfsupervisors API.
+  <outfile>     Output file. CSV format.
+
 """
+#--eval        Only evaluate pipeline, do not fit.
+#--filewise    Feed data into pipeline on a per-file basis. Default is per-page basis. NOT IMPLEMENTED
 
 import os
+import os.path
 import sys
+
+import PyPDF2
+from sklearn.pipeline import Pipeline
+
+from api.intermediary import Intermediary
+from caller import Caller
+from docopt import docopt
 from pathlib import Path
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtWebEngineWidgets as qtweb
@@ -53,10 +67,16 @@ def get_user_data_path():
 
 pdfjs = get_user_data_path() / "pdfjs" / "web" / "viewer.html"
 
+class PipelineCallbackReceiver():
+    pass
+
 class SupervisorWidget(qtw.QWidget):
-    def __init__(self):
+
+
+    def __init__(self, files):
         super().__init__()
 
+        self.files = files
         hbox = qtw.QHBoxLayout(self)
 
         # Top right split
@@ -67,11 +87,12 @@ class SupervisorWidget(qtw.QWidget):
         scroll_area.setWidget(scroll_area_widget)
         vertsplit2 = qtw.QSplitter(qtc.Qt.Vertical)
         vertsplit2.addWidget(scroll_area)
-        vertsplit2.addWidget(qtw.QPushButton(">>> Next document >>>"))
+        self.next_document_button = qtw.QPushButton(">>> Next document >>>")
+        vertsplit2.addWidget(self.next_document_button)
 
         # Top split
         web_engine_view = qtweb.QWebEngineView()
-        web_engine_view.load(qtc.QUrl.fromUserInput("%s?file=" % (pdfjs.as_uri())))
+        web_engine_view.load(qtc.QUrl.fromUserInput("%s?file=%s#pagemode=thumbs" % (pdfjs.as_uri(), self.files.pop())))
         horisplit = qtw.QSplitter(qtc.Qt.Horizontal)
         horisplit.addWidget(web_engine_view)
         horisplit.addWidget(vertsplit2)
@@ -82,24 +103,32 @@ class SupervisorWidget(qtw.QWidget):
         vertsplit1.addWidget(horisplit)
         vertsplit1.addWidget(table_view)
 
+        self.next_document_button.clicked.connect(self.on_next_document)
+
         hbox.addWidget(vertsplit1)
 
         self.setLayout(hbox)
 
         #self.setDefaultGeometry(horisplit, vertsplit1, vertsplit2)
         self.setWindowTitle('PDFSupervisors')
+    
+    @qtc.pyqtSlot()
+    def on_next_document(self):
+        print("hej")
 
 
 
 class MainWindow(qtw.QMainWindow):
-    def __init__(self):
+    def __init__(self, args):
         super().__init__()
-        self.setDefaultGeometry()
-        self.setCentralWidget(SupervisorWidget())
+        self.set_default_geometry()
+        files = [os.path.join(args["<pdfdir>"], f) for f in os.scandir(args["<pdfdir>"])]
+        print(files[:10])
+        self.setCentralWidget(SupervisorWidget(files))
         self.show()
 
 
-    def setDefaultGeometry(self):  # horisplit, vertsplit1, vertsplit2):
+    def set_default_geometry(self):  # horisplit, vertsplit1, vertsplit2):
         desktop_geometry = qtw.QDesktopWidget().availableGeometry()
         # Set window size to 60% of available width and 80% of available height
         w = desktop_geometry.right() * 0.6
@@ -115,6 +144,7 @@ class MainWindow(qtw.QMainWindow):
 def main():
     # qtw.QApplication.setStyle(qtw.QStyleFactory.create('Cleanlooks'))
     try:
+        args = docopt(__doc__, argv=sys.argv[1:])
         app = qtw.QApplication(sys.argv)
 
         if not os.path.exists(pdfjs):
@@ -124,7 +154,7 @@ def main():
                         "pdfsupervisors is looking for the file %s. Extract "
                         "PDF.js accordingly." % (pdfjs))
             return 1
-        win = MainWindow()
+        win = MainWindow(args)
         return app.exec_()
     except Exception as e:
         qtw.QMessageBox.critical(None, "Critical error", str(e))
