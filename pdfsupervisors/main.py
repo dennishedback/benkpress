@@ -36,183 +36,45 @@ Parameters:
 #--filewise    Feed data into pipeline on a per-file basis. Default is per-page basis. NOT IMPLEMENTED
 
 import os
-import os.path
 import sys
-import urllib.parse
 
-import pandas as pd
-import PyPDF2
-from sklearn.pipeline import Pipeline
-
-from api.intermediary import Intermediary
-from caller import Caller
 from docopt import docopt
-from pathlib import Path
 from PyQt5 import QtWidgets as qtw
-from PyQt5 import QtWebEngineWidgets as qtweb
-from PyQt5 import QtCore as qtc
-#import qtc.Qt
-#from PyQt5.QtCore import Qt as qt
+
+from mainwindow import MainWindow
+from settings import pdfjs
 
 
-def get_user_data_path():
-    if sys.platform.startswith("win"):
-        os_path = os.getenv("LOCALAPPDATA")
-    elif sys.platform.startswith("darwin"):
-        os_path = "~/Library/Application Support"
-    else:  # Linux
-        os_path = os.getenv("XDG_DATA_HOME", "~/.local/share")
-    path = Path(os_path) / "pdfsupervisors"
+class MainApp(qtw.QApplication):
+    """The main application object."""
 
-    if not os.path.exists(path):
-        os.mkdir(path)
+    def __init__(self, argv):
+        super().__init__(argv)
+        
+        args = docopt(__doc__, argv=argv[1:])
+        self.main_window = MainWindow(args)
+        self.main_window.show()
 
-    return path
+    def exec_(self):
+        try:
+            if not os.path.exists(pdfjs):
+                qtw.QMessageBox.critical(None, "PDF.js not found", "PDF.js not installed in user data directory. Go to "
+                            "https://mozilla.github.io/pdf.js/getting_started/#download "
+                            "and choose 'Stable Prebuilt (for older browsers)'. "
+                            "pdfsupervisors is looking for the file %s. Extract "
+                            "PDF.js accordingly." % (pdfjs))
+                return 1
+            return super().exec_()
+        except Exception as e:
+            qtw.QMessageBox.critical(None, "Critical error", str(e))
+            raise e
+        finally:
+            pass  # TODO: Implement workspace recovery
 
-pdfjs = get_user_data_path() / "pdfjs" / "web" / "viewer.html"
-#pdfjs = "file:///C:/Users/denhed/Desktop/pdfsupervisors/test.html"
-
-class PipelineCallbackReceiver():
-    pass
-
-class TargetsModel(qtc.QAbstractTableModel):
-    def __init__(self, targets):
-        qtc.QAbstractTableModel.__init__(self)
-        self._targets = targets
-
-    def addRow(self, target: str, class_: int):
-        self._targets.append({"target": target, "class": class_}, ignore_index=True) 
-        self.layoutChanged.emit()
-
-    def rowCount(self, parent=None):
-        return self._targets.shape[0]
-
-    def columnCount(self, parent=None):
-        return self._targets.shape[1]
-
-    def data(self, index, role=qtc.Qt.DisplayRole):
-        if index.isValid():
-            if role == qtc.Qt.DisplayRole:
-                return str(self._targets.iloc[index.row(), index.column()])
-        return None
-
-    def headerData(self, col, orientation, role):
-        if orientation == qtc.Qt.Horizontal and role == qtc.Qt.DisplayRole:
-            return self._targets.columns[col]
-        return None
-
-class TargetsView(qtw.QTableView):
-    @qtc.pyqtSlot()
-    def refresh(self):
-        self.update()
-
-class SupervisorWidget(qtw.QWidget):
-    def __init__(self, files, targets):
-        super().__init__()
-
-        self.files = files
-        self.targets = targets
-        hbox = qtw.QHBoxLayout(self)
-
-        # Top right split
-        scroll_area_layout = qtw.QVBoxLayout()
-        scroll_area = qtw.QScrollArea()
-        scroll_area_widget = qtw.QWidget()
-        scroll_area_widget.setLayout(scroll_area_layout)
-        scroll_area.setWidget(scroll_area_widget)
-        vertsplit2 = qtw.QSplitter(qtc.Qt.Vertical)
-        vertsplit2.addWidget(scroll_area)
-        self.next_document_button = qtw.QPushButton(">>> Next document >>>")
-        vertsplit2.addWidget(self.next_document_button)
-
-        # Top split
-        self.web_engine_view = qtweb.QWebEngineView()
-        #web_engine_view.load(qtc.QUrl.fromUserInput(pdfjs))
-        horisplit = qtw.QSplitter(qtc.Qt.Horizontal)
-        horisplit.addWidget(self.web_engine_view)
-        horisplit.addWidget(vertsplit2)
-
-        # Main Split
-        self.targets_model = TargetsModel(self.targets)
-        table_view = TargetsView()
-        table_view.setModel(self.targets_model)
-        self.targets_model.dataChanged.connect(table_view.refresh)
-        self.targets_model.layoutChanged.connect(table_view.refresh)
-        vertsplit1 = qtw.QSplitter(qtc.Qt.Vertical)
-        vertsplit1.addWidget(horisplit)
-        vertsplit1.addWidget(table_view)
-
-        self.next_document_button.clicked.connect(self.do_next_document)
-
-        hbox.addWidget(vertsplit1)
-
-        self.setLayout(hbox)
-
-        #self.setDefaultGeometry(horisplit, vertsplit1, vertsplit2)
-        self.setWindowTitle('PDFSupervisors')
-
-        self.do_next_document()
-
-    def load_document_in_viewer(self, pdf_path):
-        pdf_path_encoded = urllib.parse.quote(pdf_path)
-        url = qtc.QUrl("%s?file=%s#pagemode=thumbs" % (pdfjs.as_uri(), pdf_path_encoded))
-        self.targets_model.addRow("hej", 1)
-        self.web_engine_view.load(url)
-
-    
-    @qtc.pyqtSlot()
-    def do_next_document(self):
-        #FIXME: Cannot pop from empty list
-        pdf_path = self.files.pop()
-        self.load_document_in_viewer(pdf_path)
-
-
-
-class MainWindow(qtw.QMainWindow):
-    def __init__(self, args):
-        super().__init__()
-        self.set_default_geometry()
-        # FIXME: Gracefully handle incorrect file paths
-        files = [os.path.join(args["<pdfdir>"], f) for f in os.scandir(args["<pdfdir>"])]
-        #print(files[:10])
-        targets = pd.DataFrame({"target": ["foo"], "class": [0]})
-        self.setCentralWidget(SupervisorWidget(files, targets))
-        self.show()
-
-
-    def set_default_geometry(self):  # horisplit, vertsplit1, vertsplit2):
-        desktop_geometry = qtw.QDesktopWidget().availableGeometry()
-        # Set window size to 60% of available width and 80% of available height
-        w = desktop_geometry.right() * 0.6
-        h = desktop_geometry.bottom() * 0.8
-        self.resize(desktop_geometry.right() * 0.6, desktop_geometry.bottom() * 0.8)
-        #horisplit.setSizes([w * 0.55, w * 0.45])
-        #vertsplit1.setSizes([h * 0.7, h * 0.3])
-        #vertsplit2.setSizes([h * 0.7 * 0.8, h * 0.7 * 0.2])
-        qr = self.frameGeometry()
-        qr.moveCenter(desktop_geometry.center())
-        self.move(qr.topLeft())
-
-def main():
-    #qtw.QApplication.setStyle(qtw.QStyleFactory.create('Cleanlooks'))
-    try:
-        targets = pd.DataFrame()
-        args = docopt(__doc__, argv=sys.argv[1:])
-        app = qtw.QApplication(sys.argv)
-
-        if not os.path.exists(pdfjs):
-            qtw.QMessageBox.critical(None, "PDF.js not found", "PDF.js not installed in user data directory. Go to "
-                        "https://mozilla.github.io/pdf.js/getting_started/#download "
-                        "and choose 'Stable Prebuilt (for older browsers)'. "
-                        "pdfsupervisors is looking for the file %s. Extract "
-                        "PDF.js accordingly." % (pdfjs))
-            return 1
-        win = MainWindow(args)
-        return app.exec_()
-    except Exception as e:
-        qtw.QMessageBox.critical(None, "Critical error", str(e))
-    finally:
-        pass
+    @classmethod
+    def main(cls):
+        app = cls(sys.argv)
+        app.exec_()
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(MainApp.main())
