@@ -38,9 +38,12 @@ Parameters:
 import os
 import sys
 
+import pandas as pd
+
 from docopt import docopt
 from PyQt5 import QtWidgets as qtw
 
+from mainwidget import MainWidget
 from mainwindow import MainWindow
 from settings import pdfjs
 
@@ -54,6 +57,14 @@ class MainApp(qtw.QApplication):
         args = docopt(__doc__, argv=argv[1:])
         self.main_window = MainWindow(args)
         self.main_window.show()
+
+        # FIXME: Gracefully handle incorrect file paths
+        files = [os.path.join(args["<pdfdir>"], f) for f in os.scandir(args["<pdfdir>"])]
+        #print(files[:10])
+        targets = pd.DataFrame()#{"filename": [], "page": [], "target": [], "class": []})
+
+        self.main_widget = MainWidget(files, targets)
+        self.main_window.setCentralWidget(self.main_widget)
 
     def exec_(self):
         try:
@@ -70,6 +81,7 @@ class MainApp(qtw.QApplication):
             raise e
         finally:
             pass  # TODO: Implement workspace recovery
+            return 1
 
     @classmethod
     def main(cls):

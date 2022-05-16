@@ -16,14 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
-
-import pandas as pd
-
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
-
-from mainwidget import MainWidget
 
 class MainWindow(qtw.QMainWindow):
     def __init__(self, args):
@@ -31,11 +25,6 @@ class MainWindow(qtw.QMainWindow):
         self.set_default_geometry()
         self.setup_status_bar()
         self.setup_menu()
-        # FIXME: Gracefully handle incorrect file paths
-        files = [os.path.join(args["<pdfdir>"], f) for f in os.scandir(args["<pdfdir>"])]
-        #print(files[:10])
-        targets = pd.DataFrame({"target": ["foo"], "class": [0]})
-        self.setCentralWidget(MainWidget(files, targets))
 
     def setup_status_bar(self):
         self.statusBar().showMessage(" ", 1)  # Blank message to initiate status bar

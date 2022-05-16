@@ -23,7 +23,7 @@ from PyQt5 import QtWebEngineWidgets as qtweb
 from PyQt5 import QtCore as qtc
 
 from settings import pdfjs
-from targets import TargetsView, TargetsModel
+from targets import PandasTableModel
 
 class MainWidget(qtw.QWidget):
     def __init__(self, files, targets):
@@ -52,11 +52,12 @@ class MainWidget(qtw.QWidget):
         horisplit.addWidget(vertsplit2)
 
         # Main Split
-        self.targets_model = TargetsModel(self.targets)
-        table_view = TargetsView()
+        self.targets_model = PandasTableModel(self.targets)
+        #table_view = TargetsView()
+        table_view = qtw.QTableView()
         table_view.setModel(self.targets_model)
-        self.targets_model.dataChanged.connect(table_view.refresh)
-        self.targets_model.layoutChanged.connect(table_view.refresh)
+        #self.targets_model.dataChanged.connect(table_view.refresh)
+        #self.targets_model.layoutChanged.connect(table_view.refresh)
         vertsplit1 = qtw.QSplitter(qtc.Qt.Vertical)
         vertsplit1.addWidget(horisplit)
         vertsplit1.addWidget(table_view)
@@ -75,7 +76,7 @@ class MainWidget(qtw.QWidget):
     def load_document_in_viewer(self, pdf_path):
         pdf_path_encoded = urllib.parse.quote(pdf_path)
         url = qtc.QUrl("%s?file=%s#pagemode=thumbs" % (pdfjs.as_uri(), pdf_path_encoded))
-        self.targets_model.addRow("hej", 1)
+        self.targets_model.appendRow("hej.pdf", 2, "hej", 1)
         self.web_engine_view.load(url)
 
     
