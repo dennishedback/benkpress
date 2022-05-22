@@ -16,38 +16,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os.path
+from settings import pdfjs
+
+if not os.path.exists(pdfjs):
+    raise Exception("PDF.js not found", "PDF.js not installed in user data directory. Go to "
+                "https://mozilla.github.io/pdf.js/getting_started/#download "
+                "and choose 'Stable Prebuilt (for older browsers)'. "
+                "pdfsupervisors is looking for the file %s. Extract "
+                "PDF.js accordingly." % (pdfjs))
+
 import urllib.parse
 
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtWebEngineWidgets as qtweb
 from PyQt5 import QtCore as qtc
 
-from model import DataframeTableModel
 
-from pdfjswebengineview import PDFJSWebEngineView
-
-class MainWidget(qtw.QSplitter):
-
-    next_document_requested = qtc.pyqtSignal(bool)
-
+class PDFJSWebEngineView(qtweb.QWebEngineView):
     def __init__(self):
-        super().__init__(qtc.Qt.Horizontal)
+        super().__init__()
 
-
-        self._tab_widget = qtw.QTabWidget()
-        self._next_document_button = qtw.QPushButton(
-            ">>> Next document >>>",
-            clicked=self.next_document_requested)
-
-        self._sidebar = qtw.QSplitter(qtc.Qt.Vertical)
-        self._sidebar.addWidget(self._tab_widget)
-        self._sidebar.addWidget(self._next_document_button)
-        
-        self.addWidget(self._sidebar)
-
-    def set_document_view(self, view: qtw.QWidget) -> None:
-        self.insertWidget(0, view)
-
-    def add_page(self, page: qtw.QWidget, label: str) -> int:
-        return self._tab_widget.addTab(page, label)
-    
+    def load(self, filepath: str) -> None:
+        filepath_encoded = urllib.parse.quote(filepath)
+        url = qtc.QUrl("%s?file=%s#pagemode=thumbs" % (pdfjs.as_uri(), filepath_encoded))
+        super().load(url)

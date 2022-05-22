@@ -16,48 +16,80 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import Tuple
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
 
 class MainWindow(qtw.QMainWindow):
-    def __init__(self, args):
-        super().__init__()
-        self.set_default_geometry()
-        self.setup_status_bar()
-        self.setup_menu()
 
-    def setup_status_bar(self):
+    import_sample_requested = qtc.pyqtSignal(str)
+    open_dataset_requested = qtc.pyqtSignal(str)
+    new_dataset_requested = qtc.pyqtSignal()
+    save_dataset_requested = qtc.pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("PDFSupervisors")
+        self._setup_status_bar()
+        self._setup_menu()
+
+    def _setup_status_bar(self):
         self.statusBar().showMessage(" ", 1)  # Blank message to initiate status bar
 
-    def setup_menu(self):
+    def _setup_menu(self):
         menu_bar = self.menuBar()  # QMenuBar
         file_menu = menu_bar.addMenu("File")  # QMenu
-        file_menu.addAction("New dataset")
-        file_menu.addAction("Open dataset", self.open_dataset)
-        file_menu.addAction("Save dataset")  # QAction
-        file_menu.addAction("Save dataset as")
+        file_menu.addAction("New dataset", self.new_dataset_requested)  # QAction
+        file_menu.addAction("Open dataset", self.open_dataset_dialog)
+        file_menu.addAction("Save dataset", self.save_dataset_dialog)  
+        file_menu.addAction("Save dataset as", self.save_dataset_dialog)
         file_menu.addSeparator()
-        file_menu.addAction("Import sample")
-        file_menu.addAction("Import pipeline")
+        file_menu.addAction("Import pipeline", self.import_pipeline_dialog)
+        #file_menu.addAction("Import preprocessor", self.import_preprocessor_dialog)
+        file_menu.addAction("Import sample", self.import_sample_dialog)
         file_menu.addSeparator()
         file_menu.addAction("Quit", self.close)
 
     @qtc.pyqtSlot()
-    def open_dataset(self):
-        filename, _ = qtw.QFileDialog.getOpenFileName()
+    def open_dataset_dialog(self):
+        filename, _ = qtw.QFileDialog.getOpenFileName(
+            caption="Open dataset",
+            filter="All files (*.*);;Comma separated values (*.csv)",
+            initialFilter="Comma separated values (*.csv)")
         if filename:
-            self.statusBar().showMessage(filename)
+            self.open_dataset_requested.emit(filename)
 
+    @qtc.pyqtSlot()
+    def save_dataset_dialog(self):
+        filename, _ = qtw.QFileDialog.getSaveFileName(
+            caption="Save dataset",
+            filter="All files (*.*);;Comma separated values (*.csv)",
+            initialFilter="Comma separated values (*.csv)")
+        if filename:
+            self.save_dataset_requested.emit(filename)
 
-    def set_default_geometry(self):  # horisplit, vertsplit1, vertsplit2):
+    @qtc.pyqtSlot()
+    def import_sample_dialog(self):
+        directory = qtw.QFileDialog.getExistingDirectory(caption="Import sample")
+        if directory:
+            self.import_sample_requested.emit(directory)
+
+    @qtc.pyqtSlot()
+    def import_pipeline_dialog(self):
+        filename, _ = qtw.QFileDialog.getOpenFileName(
+            caption="Import pipeline",
+            filter="All files (*.*);;Serialized pipeline (*.joblib)",
+            initialFilter="Serialized pipeline (*.joblib)")
+        if filename:
+            self.import_pipeline_requested.emit(filename)
+
+    def set_default_geometry(self) -> Tuple[int, int]:
         desktop_geometry = qtw.QDesktopWidget().availableGeometry()
         # Set window size to 60% of available width and 80% of available height
-        w = desktop_geometry.right() * 0.6
-        h = desktop_geometry.bottom() * 0.8
-        self.resize(int(desktop_geometry.right() * 0.6), int(desktop_geometry.bottom() * 0.8))
-        #horisplit.setSizes([w * 0.55, w * 0.45])
-        #vertsplit1.setSizes([h * 0.7, h * 0.3])
-        #vertsplit2.setSizes([h * 0.7 * 0.8, h * 0.7 * 0.2])
+        w = int(desktop_geometry.right() * 0.6)
+        h = int(desktop_geometry.bottom() * 0.8)
+        self.resize(w, h)
         qr = self.frameGeometry()
         qr.moveCenter(desktop_geometry.center())
         self.move(qr.topLeft())
+        return (w, h)
