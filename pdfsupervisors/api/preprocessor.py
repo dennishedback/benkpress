@@ -3,6 +3,7 @@
 from abc import abstractmethod
 from typing import Any, List
 
+
 class PagePreprocessor:
     def _inject_caller(self, supervisor):
         """Used by the caller to inject itself."""
@@ -14,7 +15,6 @@ class PagePreprocessor:
 
     def accepts_page(self, pagetext: str) -> bool:
         return True
-
 
     def begin_pdf(self) -> None:
         pass

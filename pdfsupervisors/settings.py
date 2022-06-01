@@ -22,6 +22,7 @@ import sys
 
 from pathlib import Path
 
+
 def get_user_data_path():
     if sys.platform.startswith("win"):
         os_path = os.getenv("LOCALAPPDATA")
@@ -36,5 +37,6 @@ def get_user_data_path():
 
     return path
 
+
 pdfjs = get_user_data_path() / "pdfjs" / "web" / "viewer.html"
-#pdfjs = "file:///C:/Users/denhed/Desktop/pdfsupervisors/test.html"
+# pdfjs = "file:///C:/Users/denhed/Desktop/pdfsupervisors/test.html"

@@ -20,11 +20,14 @@ import os.path
 from settings import pdfjs
 
 if not os.path.exists(pdfjs):
-    raise Exception("PDF.js not found", "PDF.js not installed in user data directory. Go to "
-                "https://mozilla.github.io/pdf.js/getting_started/#download "
-                "and choose 'Stable Prebuilt (for older browsers)'. "
-                "pdfsupervisors is looking for the file %s. Extract "
-                "PDF.js accordingly." % (pdfjs))
+    raise Exception(
+        "PDF.js not found",
+        "PDF.js not installed in user data directory. Go to "
+        "https://mozilla.github.io/pdf.js/getting_started/#download "
+        "and choose 'Stable Prebuilt (for older browsers)'. "
+        "pdfsupervisors is looking for the file %s. Extract "
+        "PDF.js accordingly." % (pdfjs),
+    )
 
 import urllib.parse
 
@@ -39,5 +42,7 @@ class PDFJSWebEngineView(qtweb.QWebEngineView):
 
     def load(self, filepath: str) -> None:
         filepath_encoded = urllib.parse.quote(filepath)
-        url = qtc.QUrl("%s?file=%s#pagemode=thumbs" % (pdfjs.as_uri(), filepath_encoded))
+        url = qtc.QUrl(
+            "%s?file=%s#pagemode=thumbs" % (pdfjs.as_uri(), filepath_encoded)
+        )
         super().load(url)

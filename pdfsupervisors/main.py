@@ -16,23 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# TODO: Remove me
 
 import random
-import re
 import os
 import sys
-from tracemalloc import stop
-from typing import List
 
-#from phdata.arlp.tokenize import WordSentTokenizer
-
-sys.path.append(r"C:\Users\dhedb\Documents\Code\arlp")
-
+import joblib
 import pandas as pd
 import PyPDF2
 
-from nltk.corpus import stopwords
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
 
@@ -40,27 +32,13 @@ from PyQt5 import QtCore as qtc
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
 from sklearn.model_selection import train_test_split
-from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.base import BaseEstimator, TransformerMixin
-from xgboost import XGBClassifier
-from imblearn.pipeline import Pipeline as ImbalancedPipe
-from imblearn.over_sampling import SMOTE
-import numpy as np
 
-from api.preprocessor import PagePreprocessor
 from mainwidget import MainWidget
 from mainwindow import MainWindow
 from model import DataframeTableModel, SampleStringStackModel
 from pdfjswebengineview import PDFJSWebEngineView
-from settings import get_user_data_path
-
-from arlp.tokenize import SentenceTokenizer, WordSentTokenizer
-from arlp.stemmer import AdvancedAuditReportSentStemmer
 
 RANDOM_STATE = 999
-
-
 
 
 class MainApp(qtw.QApplication):
@@ -69,32 +47,9 @@ class MainApp(qtw.QApplication):
     def __init__(self, argv):
         super().__init__(argv)
 
-        self._preprocessor = AuditReportPageFirstSentenceTargetPreprocessor()
-
-        #transformer = StemTransformer()
-
-        #df = pd.read_csv(r"C:\Users\dhedb\Desktop\test.csv")
-        #print(df)
-        #df["text"] = transformer.transform(df["text"])
-        #print(df)
-        #sys.exit()
-
-        # The sentence classifier pipeline
-        # self._pipe = ImbalancedPipe([
-        #    ("stemmer", StemTransformer()),
-        #    ("vectorizer", TfidfVectorizer(use_idf=True, ngram_range=(1, 2), max_features=None, stop_words=None)),
-        #    ("resampler", SMOTE(sampling_strategy=0.5, random_state=RANDOM_STATE, n_jobs=-1)),
-        #    ("xgboost", XGBClassifier(n_estimators=1000, random_state=RANDOM_STATE))
-        # ])
-        #self._pipe.fit(["godis", "fusk"], [0, 1])
-
-        # The Big4 classifier pipeline
-        self._pipe = Pipeline([
-            ("vectorizer", TfidfVectorizer(use_idf=True, max_features=9999999, stop_words=stopwords.words("swedish"))),
-            #("resampler", SMOTE(sampling_strategy=0.5, random_state=RANDOM_STATE, n_jobs=-1)),
-            #("vectorizer", TfidfVectorizer(max_features=999999, stop_words=stopwords.words("swedish"))),
-            ("xgboost", XGBClassifier(n_estimators=1000, random_state=RANDOM_STATE))
-        ])
+        # FIXME: These should be loaded by user, they should not result in errors on startup
+        self._preprocessor = None  # AuditReportPageFirstSentenceTargetPreprocessor()
+        self._pipe = None
 
         self._pdf_view = PDFJSWebEngineView()
         self._dataset_model = DataframeTableModel()
@@ -102,7 +57,7 @@ class MainApp(qtw.QApplication):
 
         self._dataset_view = qtw.QTableView()
         self._dataset_view.setModel(self._dataset_model)
-        #self._dataset_model.dataChanged.connect(self._dataset_view.update)
+        # self._dataset_model.dataChanged.connect(self._dataset_view.update)
         self._sample_view = qtw.QListView()
         self._sample_view.setModel(self._sample_model)
         self._refit_button = qtw.QPushButton("Refit pipeline")
@@ -116,9 +71,11 @@ class MainApp(qtw.QApplication):
         self.main_window = MainWindow()
         self.main_window.setCentralWidget(self.main_widget)
         window_width, _ = self.main_window.set_default_geometry()
-        self.main_widget.setSizes([int(.5 * window_width), int(.5 * window_width)])
+        self.main_widget.setSizes([int(0.5 * window_width), int(0.5 * window_width)])
 
         self.main_window.import_sample_requested.connect(self.import_sample)
+        self.main_window.import_pipeline_requested.connect(self.import_pipeline)
+        self.main_window.import_preproc_requested.connect(self.import_preproc)
         self.main_window.new_dataset_requested.connect(self.new_dataset)
         self.main_window.open_dataset_requested.connect(self.open_dataset)
         self.main_window.save_dataset_requested.connect(self.save_dataset)
@@ -126,7 +83,6 @@ class MainApp(qtw.QApplication):
         self._refit_button.clicked.connect(self.refit_pipeline)
 
         self.main_window.show()
-        self.import_sample("E:\LFUppsats\lovisa_felicia")
 
     def _is_safe_to_proceed(self) -> bool:
         if not self._dataset_model.is_saved():
@@ -134,7 +90,8 @@ class MainApp(qtw.QApplication):
                 None,
                 "Unsaved data",
                 "Any unsaved data will be lost. Are you sure you want to proceed?",
-                qtw.QMessageBox.Yes | qtw.QMessageBox.No)
+                qtw.QMessageBox.Yes | qtw.QMessageBox.No,
+            )
             return answer == qtw.QMessageBox.Yes
         return True
 
@@ -145,6 +102,16 @@ class MainApp(qtw.QApplication):
         random.shuffle(files)
         self._sample_model.setStringList(files)
         self.next_document(None)
+
+    @qtc.pyqtSlot(str)
+    def import_preproc(self, filepath):
+        if self._is_safe_to_proceed():
+            self._preprocessor = joblib.load(filepath)
+
+    @qtc.pyqtSlot(str)
+    def import_pipeline(self, filepath):
+        if self._is_safe_to_proceed():
+            self._pipe = joblib.load(filepath)
 
     @qtc.pyqtSlot()
     def new_dataset(self):
@@ -175,21 +142,24 @@ class MainApp(qtw.QApplication):
                         probas = self._pipe.predict_proba(snippets)
                         classes = self._pipe.predict(snippets)
                     except NotFittedError:
-                        probas = [[.5, .5]] * len(snippets) 
+                        probas = [[0.5, 0.5]] * len(snippets)
                         classes = [0] * len(snippets)
                     spc = zip(snippets, probas, classes)
                     for snippet in spc:
-                        self._dataset_model.appendRow(documentpath, i+1, snippet[0], snippet[1][1], snippet[2])
+                        self._dataset_model.appendRow(
+                            documentpath, i + 1, snippet[0], snippet[1][1], snippet[2]
+                        )
             self._dataset_view.scrollToBottom()
             self._pdf_view.load(documentpath)  # Not thread safe
-    
+
     @qtc.pyqtSlot()
     def refit_pipeline(self):
         X = self._dataset_model.dataframe()["text"]
         y = pd.to_numeric(self._dataset_model.dataframe()["class"])
         try:
             X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.4, shuffle=True, random_state=RANDOM_STATE)
+                X, y, test_size=0.4, shuffle=True, random_state=RANDOM_STATE
+            )
             self._pipe.fit(X_train, y_train)
             y_predict = self._pipe.predict(X_test)
             y_prob = self._pipe.predict_proba(X_test)[:, 1]
@@ -219,7 +189,6 @@ class MainApp(qtw.QApplication):
     def main(cls):
         app = cls(sys.argv)
         return app.exec_()
-
 
 
 if __name__ == "__main__":

@@ -20,12 +20,15 @@ from typing import Tuple
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
 
+
 class MainWindow(qtw.QMainWindow):
 
     import_sample_requested = qtc.pyqtSignal(str)
     open_dataset_requested = qtc.pyqtSignal(str)
     new_dataset_requested = qtc.pyqtSignal()
     save_dataset_requested = qtc.pyqtSignal(str)
+    import_pipeline_requested = qtc.pyqtSignal(str)
+    import_preproc_requested = qtc.pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -41,11 +44,11 @@ class MainWindow(qtw.QMainWindow):
         file_menu = menu_bar.addMenu("File")  # QMenu
         file_menu.addAction("New dataset", self.new_dataset_requested)  # QAction
         file_menu.addAction("Open dataset", self.open_dataset_dialog)
-        file_menu.addAction("Save dataset", self.save_dataset_dialog)  
+        file_menu.addAction("Save dataset", self.save_dataset_dialog)
         file_menu.addAction("Save dataset as", self.save_dataset_dialog)
         file_menu.addSeparator()
         file_menu.addAction("Import pipeline", self.import_pipeline_dialog)
-        #file_menu.addAction("Import preprocessor", self.import_preprocessor_dialog)
+        file_menu.addAction("Import preprocessor", self.import_preproc_dialog)
         file_menu.addAction("Import sample", self.import_sample_dialog)
         file_menu.addSeparator()
         file_menu.addAction("Quit", self.close)
@@ -55,7 +58,8 @@ class MainWindow(qtw.QMainWindow):
         filename, _ = qtw.QFileDialog.getOpenFileName(
             caption="Open dataset",
             filter="All files (*.*);;Comma separated values (*.csv)",
-            initialFilter="Comma separated values (*.csv)")
+            initialFilter="Comma separated values (*.csv)",
+        )
         if filename:
             self.open_dataset_requested.emit(filename)
 
@@ -64,7 +68,8 @@ class MainWindow(qtw.QMainWindow):
         filename, _ = qtw.QFileDialog.getSaveFileName(
             caption="Save dataset",
             filter="All files (*.*);;Comma separated values (*.csv)",
-            initialFilter="Comma separated values (*.csv)")
+            initialFilter="Comma separated values (*.csv)",
+        )
         if filename:
             self.save_dataset_requested.emit(filename)
 
@@ -79,9 +84,20 @@ class MainWindow(qtw.QMainWindow):
         filename, _ = qtw.QFileDialog.getOpenFileName(
             caption="Import pipeline",
             filter="All files (*.*);;Serialized pipeline (*.joblib)",
-            initialFilter="Serialized pipeline (*.joblib)")
+            initialFilter="Serialized pipeline (*.joblib)",
+        )
         if filename:
             self.import_pipeline_requested.emit(filename)
+
+    @qtc.pyqtSlot()
+    def import_preproc_dialog(self):
+        filename, _ = qtw.QFileDialog.getOpenFileName(
+            caption="Import preprocessor",
+            filter="All files (*.*);;Serialized preprocessor (*.joblib)",
+            initialFilter="Serialized preprocessor (*.joblib)",
+        )
+        if filename:
+            self.import_preproc_requested.emit(filename)
 
     def set_default_geometry(self) -> Tuple[int, int]:
         desktop_geometry = qtw.QDesktopWidget().availableGeometry()

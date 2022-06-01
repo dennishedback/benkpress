@@ -26,6 +26,7 @@ from model import DataframeTableModel
 
 from pdfjswebengineview import PDFJSWebEngineView
 
+
 class MainWidget(qtw.QSplitter):
 
     next_document_requested = qtc.pyqtSignal(bool)
@@ -33,16 +34,15 @@ class MainWidget(qtw.QSplitter):
     def __init__(self):
         super().__init__(qtc.Qt.Horizontal)
 
-
         self._tab_widget = qtw.QTabWidget()
         self._next_document_button = qtw.QPushButton(
-            ">>> Next document >>>",
-            clicked=self.next_document_requested)
+            ">>> Next document >>>", clicked=self.next_document_requested
+        )
 
         self._sidebar = qtw.QSplitter(qtc.Qt.Vertical)
         self._sidebar.addWidget(self._tab_widget)
         self._sidebar.addWidget(self._next_document_button)
-        
+
         self.addWidget(self._sidebar)
 
     def set_document_view(self, view: qtw.QWidget) -> None:
@@ -50,4 +50,3 @@ class MainWidget(qtw.QSplitter):
 
     def add_page(self, page: qtw.QWidget, label: str) -> int:
         return self._tab_widget.addTab(page, label)
-    

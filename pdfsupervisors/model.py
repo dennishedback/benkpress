@@ -20,7 +20,8 @@ from __future__ import annotations
 from typing import Any
 
 import pandas as pd
-#import pandas.util
+
+# import pandas.util
 
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
@@ -30,12 +31,13 @@ from PyQt5 import QtGui as qtg
 class SampleStringStackModel(qtc.QStringListModel):
     def __init__(self):
         super().__init__()
-    
+
     def pop(self) -> str:
         index = self.createIndex(0, 0)
         item = self.itemData(index)
         self.removeRows(0, 1)
         return item[0]
+
 
 class DataframeTableModel(qtc.QAbstractTableModel):
     def __init__(self):
@@ -64,7 +66,16 @@ class DataframeTableModel(qtc.QAbstractTableModel):
 
     def appendRow(self, filename: str, page: int, text: str, proba: float, class_: int):
         self.beginInsertRows(qtc.QModelIndex(), self.rowCount(), self.rowCount())
-        self._df = self._df.append({"file": filename, "page": page, "text": text, "proba": proba, "class": int(class_)}, ignore_index=True) 
+        self._df = self._df.append(
+            {
+                "file": filename,
+                "page": page,
+                "text": text,
+                "proba": proba,
+                "class": int(class_),
+            },
+            ignore_index=True,
+        )
         self.endInsertRows()
         self.layoutChanged.emit()
 
@@ -81,7 +92,16 @@ class DataframeTableModel(qtc.QAbstractTableModel):
             elif role == qtc.Qt.ForegroundRole:
                 if index.column() == self._df.columns.get_loc("proba"):
                     brush = qtg.QBrush()
-                    brush.setColor(qtg.QColor.fromRgb(0, int(255.0*float(self._df.iloc[index.row(), index.column()])), 0)) 
+                    brush.setColor(
+                        qtg.QColor.fromRgb(
+                            0,
+                            int(
+                                255.0
+                                * float(self._df.iloc[index.row(), index.column()])
+                            ),
+                            0,
+                        )
+                    )
                     return brush
         return None
 
@@ -105,4 +125,3 @@ class DataframeTableModel(qtc.QAbstractTableModel):
             return qtc.Qt.ItemIsEditable | super().flags(index)
         else:
             return super().flags(index)
-            
