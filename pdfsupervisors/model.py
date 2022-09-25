@@ -48,7 +48,7 @@ class DataframeTableModel(qtc.QAbstractTableModel):
     @classmethod
     def load(cls, filepath_or_buffer: Any) -> DataframeTableModel:
         model = cls()
-        model._df = pd.read_csv(filepath_or_buffer, index=False)
+        model._df = pd.read_csv(filepath_or_buffer, index_col=False)
         model._last_saved_rowcount = model.rowCount()
         return model
 
@@ -107,7 +107,8 @@ class DataframeTableModel(qtc.QAbstractTableModel):
 
     def headerData(self, col, orientation, role):
         if orientation == qtc.Qt.Horizontal and role == qtc.Qt.DisplayRole:
-            return self._df.columns[col]
+            if len(self._df.columns) > col:
+                return self._df.columns[col]
         return None
 
     def setData(self, index, value, role=qtc.Qt.EditRole) -> bool:

@@ -48,8 +48,9 @@ class MainApp(qtw.QApplication):
         super().__init__(argv)
 
         # FIXME: These should be loaded by user, they should not result in errors on startup
-        self._preprocessor = None  # AuditReportPageFirstSentenceTargetPreprocessor()
-        self._pipe = None
+        self._context = None
+        #self._preprocessor = None  # AuditReportPageFirstSentenceTargetPreprocessor()
+        #self._pipe = None
 
         self._pdf_view = PDFJSWebEngineView()
         self._dataset_model = DataframeTableModel()
@@ -74,8 +75,9 @@ class MainApp(qtw.QApplication):
         self.main_widget.setSizes([int(0.5 * window_width), int(0.5 * window_width)])
 
         self.main_window.import_sample_requested.connect(self.import_sample)
-        self.main_window.import_pipeline_requested.connect(self.import_pipeline)
-        self.main_window.import_preproc_requested.connect(self.import_preproc)
+        self.main_window.import_context_requested.connect(self.import_context)
+        #self.main_window.import_pipeline_requested.connect(self.import_pipeline)
+        #self.main_window.import_preproc_requested.connect(self.import_preproc)
         self.main_window.new_dataset_requested.connect(self.new_dataset)
         self.main_window.open_dataset_requested.connect(self.open_dataset)
         self.main_window.save_dataset_requested.connect(self.save_dataset)
@@ -109,6 +111,11 @@ class MainApp(qtw.QApplication):
             self._preprocessor = joblib.load(filepath)
 
     @qtc.pyqtSlot(str)
+    def import_context(self, filepath):
+        if self._is_safe_to_proceed():
+            self._context = joblib.load(filepath)
+
+    @qtc.pyqtSlot(str)
     def import_pipeline(self, filepath):
         if self._is_safe_to_proceed():
             self._pipe = joblib.load(filepath)
@@ -136,11 +143,11 @@ class MainApp(qtw.QApplication):
             pdf = PyPDF2.PdfFileReader(documentpath)
             pages = [pdf.getPage(i).extractText() for i in range(pdf.getNumPages())]
             for i, pagetext in enumerate(pages):
-                if self._preprocessor.accepts_page(pagetext):
-                    snippets = self._preprocessor.transform(pagetext)
+                if self._context.preprocessor.accepts_page(pagetext):
+                    snippets = self._context.preprocessor.transform(pagetext)
                     try:
-                        probas = self._pipe.predict_proba(snippets)
-                        classes = self._pipe.predict(snippets)
+                        probas = self._context.pipeline.predict_proba(snippets)
+                        classes = self._context.pipeline.predict(snippets)
                     except NotFittedError:
                         probas = [[0.5, 0.5]] * len(snippets)
                         classes = [0] * len(snippets)
@@ -160,9 +167,9 @@ class MainApp(qtw.QApplication):
             X_train, X_test, y_train, y_test = train_test_split(
                 X, y, test_size=0.4, shuffle=True, random_state=RANDOM_STATE
             )
-            self._pipe.fit(X_train, y_train)
-            y_predict = self._pipe.predict(X_test)
-            y_prob = self._pipe.predict_proba(X_test)[:, 1]
+            self._context.pipeline.fit(X_train, y_train)
+            y_predict = self._context.pipeline.predict(X_test)
+            y_prob = self._context.pipeline.predict_proba(X_test)[:, 1]
             print(classification_report(y_test, y_predict))
             print(confusion_matrix(y_test, y_predict))
             fpr, tpr, thresholds = roc_curve(y_test, y_prob)
@@ -171,7 +178,7 @@ class MainApp(qtw.QApplication):
         except Exception as e:
             qtw.QMessageBox.warning(None, "Warning", repr(e))
         try:
-            self._pipe.fit(X, y)
+            self._context.pipeline.fit(X, y)
         except Exception as e:
             qtw.QMessageBox.warning(None, "Warning", repr(e))
 
