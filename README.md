@@ -12,7 +12,7 @@ continuously *benchmark* the classifier intended to be trained by the generated
 training data. You know when to quit tagging because your classifier has good
 enough predictive power on previously unseen samples.
 
-[1^]: But really, it's actually a way to write the Swedish word bänkpress as a
+[^1]: But really, it's actually a way to write the Swedish word bänkpress as a
 valid Python package name.
 
 ## The use case
