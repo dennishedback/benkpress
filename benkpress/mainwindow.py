@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-# pdfsupervisors
+# benkpress
 # Copyright (C) 2022 Dennis Hedback
 #
 # This program is free software: you can redistribute it and/or modify
@@ -33,7 +33,7 @@ class MainWindow(qtw.QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PDFSupervisors")
+        self.setWindowTitle("benkpress")
         self._setup_status_bar()
         self._setup_menu()
 
