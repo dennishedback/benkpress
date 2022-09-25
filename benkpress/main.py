@@ -28,7 +28,6 @@ import PyPDF2
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
 
-# TODO: These should not be imported here, but used in external app
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
 from sklearn.model_selection import train_test_split
@@ -47,7 +46,6 @@ class MainApp(qtw.QApplication):
     def __init__(self, argv):
         super().__init__(argv)
 
-        # FIXME: These should be loaded by user, they should not result in errors on startup
         self._context = None
         #self._preprocessor = None  # AuditReportPageFirstSentenceTargetPreprocessor()
         #self._pipe = None
