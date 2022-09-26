@@ -40,6 +40,13 @@ Lorem ipsum dolor sit amet.
 
 ## Examples
 
+In this example, we'll tag training data for an [XGBoost](https://github.com/dmlc/xgboost) classifier to identify an arbitrary class of pages
+in a sample of PDF documents. The pages are classified according to their vocabulary characteristics by first tokenizing
+the page content using a [TfidfVectorizer](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html).
+Since we are classifying pages instead of, for example, sentences, we can use the `PassthroughPagePreprocessor` from benkpress_api.
+The resulting `PDFClassifierContext` is saved to file using joblib:
+
+
 ```python
 
 import joblib
@@ -64,7 +71,12 @@ joblib.dump(context, "pagecontext.joblib")
 
 ```
 
+The context is loaded in benkpress by selecting File -> Import context:
+
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context1.png)
+
+
+
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context2.png)
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context3.png)
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context4.png)
