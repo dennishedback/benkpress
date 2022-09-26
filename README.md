@@ -75,12 +75,24 @@ The context is loaded in benkpress by selecting File -> Import context:
 
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context1.png)
 
+After this, we choose a folder containing a sample of PDFs for tagging the training data:
 
-
-![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context2.png)
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context3.png)
-![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context4.png)
+
+A PDF will appear in the reader and the preprocessed data points will appear to the right.
+Note that since we are using `PassthroughPagePreprocessor`, each data point will be the text of
+each respective page. We can now look through the PDF and tag which pages are of the relevant class
+by changing the values in the rightmost column from 0 to 1. When we are done tagging, we click the
+button ">>> Next document >>>" in the lower left corner and the next PDF in the sample will appear
+in the reader:
+
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress1.png)
+
+After we have tagged some pages of the relevant class, the classifier provided in our
+imported context can be evaluated, as well as help out with tagging. On the "Pipeline" tab,
+click the "Refit pipeline" button. K-fold cross validation metrics will appear in the
+view above the button:
+
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress2.png)
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress3.png)
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress4.png)
@@ -103,5 +115,7 @@ valid Python package name.
 
 - When trying to fit a classifier from a dataset which was loaded from file instead
   of generated in the application, an exception is thrown.
+- If a sample is imported before the application has a valid context, the application
+  will crash.
 
 
