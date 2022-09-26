@@ -13,17 +13,6 @@ perform this classification. How do you want to manually tag the training data? 
 you want to convert all PDFs into plain text and read it as such, with potential
 optical text recognition errors?
 
-I argue that it's much easier to read and tag this:
-
-[Insert screenshot here]
-
-Than it is to read and tag this:
-
-[Insert screenshot here]
-
-And this is exactly what benkpress is for.
-
-
 ## Usage at a glance
 
 1. Create your sklearn compatible pipeline using the Python console or any other preferred method.
