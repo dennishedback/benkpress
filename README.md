@@ -65,6 +65,15 @@ joblib.dump(context, "pagecontext.joblib")
 ```
 
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context1.png)
+![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context2.png)
+![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context3.png)
+![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context4.png)
+![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress1.png)
+![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress2.png)
+![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress3.png)
+![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress4.png)
+![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress5.png)
+![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress6.png)
 
 ## benkpress?
 
