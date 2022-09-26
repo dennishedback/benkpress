@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-# pdfsupervisors
+# benkpress
 # Copyright (C) 2022 Dennis Hedback
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,27 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
-import os.path
-import sys
+import joblib
 
-from pathlib import Path
+from benkpress_api import PassthroughPagePreprocessor, PDFClassifierContext
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.pipeline import Pipeline
+from xgboost import XGBClassifier
 
+RANDOM_STATE = 999
 
-def get_user_data_path():
-    if sys.platform.startswith("win"):
-        os_path = os.getenv("LOCALAPPDATA")
-    elif sys.platform.startswith("darwin"):
-        os_path = "~/Library/Application Support"
-    else:  # Linux
-        os_path = os.getenv("XDG_DATA_HOME", "~/.local/share")
-    path = Path(os_path) / "pdfsupervisors"
+context = PDFClassifierContext(PassthroughPagePreprocessor(), Pipeline([
+    ("Vectorizer", TfidfVectorizer(use_idf=True, max_features=None, stop_words=None)),
+    ("Classifier", XGBClassifier(n_estimators=1000, random_state=RANDOM_STATE))
+]))
 
-    if not os.path.exists(path):
-        os.mkdir(path)
-
-    return path
-
-
-pdfjs = get_user_data_path() / "pdfjs" / "web" / "viewer.html"
-# pdfjs = "file:///C:/Users/denhed/Desktop/pdfsupervisors/test.html"
+joblib.dump(context, "pagecontext.joblib")

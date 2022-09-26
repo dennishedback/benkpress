@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-# pdfsupervisors
+# benkpress
 # Copyright (C) 2022 Dennis Hedback
 #
 # This program is free software: you can redistribute it and/or modify
@@ -27,12 +27,13 @@ class MainWindow(qtw.QMainWindow):
     open_dataset_requested = qtc.pyqtSignal(str)
     new_dataset_requested = qtc.pyqtSignal()
     save_dataset_requested = qtc.pyqtSignal(str)
+    import_context_requested = qtc.pyqtSignal(str)
     import_pipeline_requested = qtc.pyqtSignal(str)
     import_preproc_requested = qtc.pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PDFSupervisors")
+        self.setWindowTitle("benkpress")
         self._setup_status_bar()
         self._setup_menu()
 
@@ -47,8 +48,9 @@ class MainWindow(qtw.QMainWindow):
         file_menu.addAction("Save dataset", self.save_dataset_dialog)
         file_menu.addAction("Save dataset as", self.save_dataset_dialog)
         file_menu.addSeparator()
-        file_menu.addAction("Import pipeline", self.import_pipeline_dialog)
-        file_menu.addAction("Import preprocessor", self.import_preproc_dialog)
+        file_menu.addAction("Import context", self.import_context_dialog)
+        #file_menu.addAction("Import pipeline", self.import_pipeline_dialog)
+        #file_menu.addAction("Import preprocessor", self.import_preproc_dialog)
         file_menu.addAction("Import sample", self.import_sample_dialog)
         file_menu.addSeparator()
         file_menu.addAction("Quit", self.close)
@@ -78,6 +80,16 @@ class MainWindow(qtw.QMainWindow):
         directory = qtw.QFileDialog.getExistingDirectory(caption="Import sample")
         if directory:
             self.import_sample_requested.emit(directory)
+
+    @qtc.pyqtSlot()
+    def import_context_dialog(self):
+        filename, _ = qtw.QFileDialog.getOpenFileName(
+            caption="Import context",
+            filter="All files (*.*);;Serialized PDFClassifierContext (*.joblib)",
+            initialFilter="Serialized PDFClassifierContext (*.joblib)",
+        )
+        if filename:
+            self.import_context_requested.emit(filename)
 
     @qtc.pyqtSlot()
     def import_pipeline_dialog(self):
