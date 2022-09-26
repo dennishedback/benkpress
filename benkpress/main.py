@@ -17,6 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+import io
 import random
 import os
 import sys
@@ -27,6 +28,7 @@ import PyPDF2
 
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
+from PyQt5 import QtGui as qtg
 
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
@@ -59,13 +61,26 @@ class MainApp(qtw.QApplication):
         # self._dataset_model.dataChanged.connect(self._dataset_view.update)
         self._sample_view = qtw.QListView()
         self._sample_view.setModel(self._sample_model)
+
+        self._benchmark_label = qtw.QLabel("Benchmark")
+        self._benchmark_view = qtw.QPlainTextEdit()
+        self._benchmark_view.setReadOnly(True)
+        font = qtg.QFont("Monospace")
+        font.setStyleHint(qtg.QFont.StyleHint.TypeWriter)
+        self._benchmark_view.setFont(font)
         self._refit_button = qtw.QPushButton("Refit pipeline")
+        self._pipeline_layout = qtw.QVBoxLayout()
+        self._pipeline_layout.addWidget(self._benchmark_label)
+        self._pipeline_layout.addWidget(self._benchmark_view)
+        self._pipeline_layout.addWidget(self._refit_button)
+        self._pipeline_widget = qtw.QWidget()
+        self._pipeline_widget.setLayout(self._pipeline_layout)
 
         self.main_widget = MainWidget()
         self.main_widget.set_document_view(self._pdf_view)
         self.main_widget.add_page(self._dataset_view, "Dataset")
         self.main_widget.add_page(self._sample_view, "Sample")
-        self.main_widget.add_page(self._refit_button, "Pipeline")
+        self.main_widget.add_page(self._pipeline_widget, "Pipeline")
 
         self.main_window = MainWindow()
         self.main_window.setCentralWidget(self.main_widget)
@@ -83,6 +98,9 @@ class MainApp(qtw.QApplication):
         self._refit_button.clicked.connect(self.refit_pipeline)
 
         self.main_window.show()
+
+        self.import_context(r"C:\Users\dhedb\Documents\PycharmProjects\benkpress\examples\pagecontext.joblib")
+        self.import_sample(r"E:\LFUppsats\lovisa_felicia")
 
     def _is_safe_to_proceed(self) -> bool:
         if not self._dataset_model.is_saved():
@@ -158,6 +176,23 @@ class MainApp(qtw.QApplication):
             self._dataset_view.scrollToBottom()
             self._pdf_view.load(documentpath)  # Not thread safe
 
+    def _print_to_string(self, *args, **kwargs):
+        with io.StringIO() as sstream:
+            print(*args, file=sstream, **kwargs)
+            return sstream.getvalue()
+
+    def _print_to_benchmark_view(self, performance_metrics: str):
+        current_output = self._benchmark_view.toPlainText()
+        self._benchmark_view.setPlainText(current_output + self._print_to_string(performance_metrics) + "\n")
+
+
+    def _flush_benchmark_view(self):
+        current_output = self._benchmark_view.toPlainText()
+        current_output += "\n\n"
+        current_output += "############################################################"
+        current_output += "\n\n"
+        self._benchmark_view.setPlainText(current_output)
+
     @qtc.pyqtSlot()
     def refit_pipeline(self):
         X = self._dataset_model.dataframe()["text"]
@@ -169,11 +204,17 @@ class MainApp(qtw.QApplication):
             self._context.pipeline.fit(X_train, y_train)
             y_predict = self._context.pipeline.predict(X_test)
             y_prob = self._context.pipeline.predict_proba(X_test)[:, 1]
-            print(classification_report(y_test, y_predict))
-            print(confusion_matrix(y_test, y_predict))
             fpr, tpr, thresholds = roc_curve(y_test, y_prob)
             roc_auc = auc(fpr, tpr)
-            print("AUC:", roc_auc)
+
+            self._flush_benchmark_view()
+            self._print_to_benchmark_view(classification_report(y_test, y_predict))
+            self._print_to_benchmark_view(
+                confusion_matrix(y_test, y_predict)
+            )
+            self._print_to_benchmark_view(
+                "AUC: " + str(roc_auc)
+            )
         except Exception as e:
             qtw.QMessageBox.warning(None, "Warning", repr(e))
         try:
