@@ -78,3 +78,9 @@ enough predictive power on previously unseen samples.
 [^1]: But really, it's actually a way to write the Swedish word bänkpress as a
 valid Python package name.
 
+## Known issues
+
+- When trying to fit a classifier from a dataset which was loaded from file instead
+  of generated in the application, an exception is thrown.
+
+
