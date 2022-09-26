@@ -32,7 +32,7 @@ from PyQt5 import QtGui as qtg
 
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score, KFold
 
 from mainwidget import MainWidget
 from mainwindow import MainWindow
@@ -69,9 +69,29 @@ class MainApp(qtw.QApplication):
         font.setStyleHint(qtg.QFont.StyleHint.TypeWriter)
         self._benchmark_view.setFont(font)
         self._refit_button = qtw.QPushButton("Refit pipeline")
+
+        self._kfold_spinbox = qtw.QSpinBox()
+        self._kfold_spinbox.setMaximum(99)
+        self._kfold_spinbox.setMinimum(0)
+        self._kfold_spinbox.setValue(5)
+
+        #self._threshold_spinbox = qtw.QDoubleSpinBox()
+        #self._threshold_spinbox.setMaximum(1.0)
+        #self._threshold_spinbox.setMinimum(0.0)
+        #self._threshold_spinbox.setSingleStep(0.05)
+        #self._threshold_spinbox.setValue(0.5)
+
+        self._refit_settings_layout = qtw.QFormLayout()
+        self._refit_settings_layout.addRow("K-fold splits", self._kfold_spinbox)
+        #self._refit_settings_layout.addRow("Probability threshold", self._threshold_spinbox)
+
+        self._refit_settings_widget = qtw.QWidget()
+        self._refit_settings_widget.setLayout(self._refit_settings_layout)
+
         self._pipeline_layout = qtw.QVBoxLayout()
         self._pipeline_layout.addWidget(self._benchmark_label)
         self._pipeline_layout.addWidget(self._benchmark_view)
+        self._pipeline_layout.addWidget(self._refit_settings_widget)
         self._pipeline_layout.addWidget(self._refit_button)
         self._pipeline_widget = qtw.QWidget()
         self._pipeline_widget.setLayout(self._pipeline_layout)
@@ -189,32 +209,47 @@ class MainApp(qtw.QApplication):
     def _flush_benchmark_view(self):
         current_output = self._benchmark_view.toPlainText()
         current_output += "\n\n"
-        current_output += "############################################################"
+        current_output += "============================================================"
         current_output += "\n\n"
         self._benchmark_view.setPlainText(current_output)
+
+    def _scroll_down_benchmark_view(self):
+        self._benchmark_view.verticalScrollBar().setSliderPosition(self._benchmark_view.verticalScrollBar().maximum())
 
     @qtc.pyqtSlot()
     def refit_pipeline(self):
         X = self._dataset_model.dataframe()["text"]
         y = pd.to_numeric(self._dataset_model.dataframe()["class"])
         try:
-            X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.4, shuffle=True, random_state=RANDOM_STATE
-            )
-            self._context.pipeline.fit(X_train, y_train)
-            y_predict = self._context.pipeline.predict(X_test)
-            y_prob = self._context.pipeline.predict_proba(X_test)[:, 1]
-            fpr, tpr, thresholds = roc_curve(y_test, y_prob)
-            roc_auc = auc(fpr, tpr)
-
+            num_splits = self._kfold_spinbox.value()
             self._flush_benchmark_view()
-            self._print_to_benchmark_view(classification_report(y_test, y_predict))
-            self._print_to_benchmark_view(
-                confusion_matrix(y_test, y_predict)
-            )
-            self._print_to_benchmark_view(
-                "AUC: " + str(roc_auc)
-            )
+            self._print_to_benchmark_view("# BENCHMARKS FOR %i-FOLD VALIDATION" % num_splits)
+            ss = KFold(n_splits=num_splits, shuffle=True, random_state=RANDOM_STATE)
+            for i, indices in enumerate(ss.split(X, y)):
+                train_indices, test_indices = indices
+                X_train = X[train_indices]
+                y_train = y[train_indices]
+                X_test = X[test_indices]
+                y_test = y[test_indices]
+
+                self._context.pipeline.fit(X_train, y_train)
+                y_predict = self._context.pipeline.predict(X_test)
+                y_prob = self._context.pipeline.predict_proba(X_test)[:, 1]
+                fpr, tpr, thresholds = roc_curve(y_test, y_prob)
+                roc_auc = auc(fpr, tpr)
+
+                self._print_to_benchmark_view("## Benchmark for fold %i" % (i + 1))
+                self._print_to_benchmark_view("Accuracy, precision, recall:")
+                self._print_to_benchmark_view(classification_report(y_test, y_predict))
+                self._print_to_benchmark_view("Confusion matrix:")
+                self._print_to_benchmark_view(
+                    confusion_matrix(y_test, y_predict)
+                )
+                self._print_to_benchmark_view("AUROC:")
+                self._print_to_benchmark_view(str(roc_auc))
+
+                self._scroll_down_benchmark_view()
+
         except Exception as e:
             qtw.QMessageBox.warning(None, "Warning", repr(e))
         try:
