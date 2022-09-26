@@ -81,7 +81,10 @@ After this, we choose a folder containing a sample of PDFs for tagging the train
 
 A PDF will appear in the reader and the preprocessed data points will appear to the right.
 Note that since we are using `PassthroughPagePreprocessor`, each data point will be the text of
-each respective page. We can now look through the PDF and tag which pages are of the relevant class
+each respective page. If we instead wanted to classify sentences, we would have to implement a
+custom preprocessor, probably using some NLP tools.
+
+We can now look through the PDF and tag which pages are of the relevant class
 by changing the values in the rightmost column from 0 to 1. When we are done tagging, we click the
 button ">>> Next document >>>" in the lower left corner and the next PDF in the sample will appear
 in the reader:
@@ -94,10 +97,19 @@ click the "Refit pipeline" button. K-fold cross validation metrics will appear i
 view above the button:
 
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress2.png)
+
+The next time a new document is loaded, the fitted classifier pipeline will make a prediction.
+This serves two purposes. The first is to aid with identifying relevant pages, although care
+must be taken to not trust the classifier too much for this. The second is to get a feeling for
+how well it fulfills its job, and thus when we can stop tagging. After each refitting with additional training data,
+ts predictions will become more accurate:
+
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress3.png)
+
+When the classifier is accurate enough, we can export the dataset to a CSV file so that
+we can refit the classifier from the data, for use in other applications:
+
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress4.png)
-![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress5.png)
-![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress6.png)
 
 ## benkpress?
 
