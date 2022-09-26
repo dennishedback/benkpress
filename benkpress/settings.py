@@ -21,21 +21,6 @@ import os.path
 import sys
 
 from pathlib import Path
+from appdirs import user_data_dir
 
-
-def get_user_data_path():
-    if sys.platform.startswith("win"):
-        os_path = os.getenv("LOCALAPPDATA")
-    elif sys.platform.startswith("darwin"):
-        os_path = "~/Library/Application Support"
-    else:  # Linux
-        os_path = os.getenv("XDG_DATA_HOME", "~/.local/share")
-    path = Path(os_path) / "benkpress"
-
-    if not os.path.exists(path):
-        os.mkdir(path)
-
-    return path
-
-
-pdfjs = get_user_data_path() / "pdfjs" / "web" / "viewer.html"
+pdfjs = Path(user_data_dir("benkpress", "dennishedback")) / "pdfjs" / "web" / "viewer.html"
