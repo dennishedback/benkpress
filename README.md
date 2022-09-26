@@ -40,6 +40,8 @@ Lorem ipsum dolor sit amet.
 
 ## Examples
 
+### Page classifer
+
 In this example, we'll tag training data for an [XGBoost](https://github.com/dmlc/xgboost) classifier to identify an arbitrary class of pages
 in a sample of PDF documents. The pages are classified according to their vocabulary characteristics by first tokenizing
 the page content using a [TfidfVectorizer](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html).
@@ -110,6 +112,10 @@ When the classifier is accurate enough, we can export the dataset to a CSV file 
 we can refit the classifier from the data, for use in other applications:
 
 ![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress4.png)
+
+### Sentence classifier
+
+Lorem ipsum dolor sit amet.
 
 ## benkpress?
 
