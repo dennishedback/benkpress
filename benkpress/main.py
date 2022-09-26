@@ -142,6 +142,7 @@ class MainApp(qtw.QApplication):
             pages = [pdf.getPage(i).extractText() for i in range(pdf.getNumPages())]
             for i, pagetext in enumerate(pages):
                 if self._context.preprocessor.accepts_page(pagetext):
+                    pagetext = " ".join(pagetext.strip().split())
                     snippets = self._context.preprocessor.transform(pagetext)
                     try:
                         probas = self._context.pipeline.predict_proba(snippets)
