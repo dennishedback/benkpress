@@ -64,6 +64,8 @@ joblib.dump(context, "pagecontext.joblib")
 
 ```
 
+![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context.png)
+
 ## benkpress?
 
 "Benkpress" is Norwegian for "benchpress"[^1]. Its meaning is relevant in two different
