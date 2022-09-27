@@ -119,9 +119,6 @@ class MainApp(qtw.QApplication):
 
         self.main_window.show()
 
-        self.import_context(r"C:\Users\dhedb\Documents\PycharmProjects\benkpress\examples\pagecontext.joblib")
-        self.import_sample(r"E:\LFUppsats\lovisa_felicia")
-
     def _is_safe_to_proceed(self) -> bool:
         if not self._dataset_model.is_saved():
             answer = qtw.QMessageBox.question(
