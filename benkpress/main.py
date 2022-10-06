@@ -18,26 +18,26 @@
 
 
 import io
-import random
 import os
+import random
 import sys
 
-import joblib
-import pandas as pd
 import PyPDF2
-
-from PyQt5 import QtWidgets as qtw
+import pandas as pd
 from PyQt5 import QtCore as qtc
 from PyQt5 import QtGui as qtg
-
+from PyQt5 import QtWidgets as qtw
+from benkpress_plugins.preprocessors import Preprocessor
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
-from sklearn.model_selection import train_test_split, cross_val_score, KFold
+from sklearn.model_selection import KFold
+from sklearn.pipeline import Pipeline
 
 from mainwidget import MainWidget
 from mainwindow import MainWindow
 from model import DataframeTableModel, SampleStringStackModel
 from pdfjswebengineview import PDFJSWebEngineView
+from pluginloader import PluginLoader
 
 RANDOM_STATE = 999
 
@@ -45,12 +45,19 @@ RANDOM_STATE = 999
 class MainApp(qtw.QApplication):
     """The main application object."""
 
-    def __init__(self, argv):
+    _preprocessor: Preprocessor
+    _pipeline: Pipeline
+
+    def __init__(self, argv: List[str]):
         super().__init__(argv)
 
-        self._context = None
-        #self._preprocessor = None  # AuditReportPageFirstSentenceTargetPreprocessor()
-        #self._pipe = None
+        # TODO: Should initalize all widgets in MainWidget and just connect everything
+        # in this file.
+
+        self._pipeline = None  # Should be some default value instead!
+        self._preprocessor = None  # Should be some default value instead!
+
+        self._plugin_loader = PluginLoader()
 
         self._pdf_view = PDFJSWebEngineView()
         self._dataset_model = DataframeTableModel()
@@ -75,15 +82,15 @@ class MainApp(qtw.QApplication):
         self._kfold_spinbox.setMinimum(0)
         self._kfold_spinbox.setValue(5)
 
-        #self._threshold_spinbox = qtw.QDoubleSpinBox()
-        #self._threshold_spinbox.setMaximum(1.0)
-        #self._threshold_spinbox.setMinimum(0.0)
-        #self._threshold_spinbox.setSingleStep(0.05)
-        #self._threshold_spinbox.setValue(0.5)
+        # self._threshold_spinbox = qtw.QDoubleSpinBox()
+        # self._threshold_spinbox.setMaximum(1.0)
+        # self._threshold_spinbox.setMinimum(0.0)
+        # self._threshold_spinbox.setSingleStep(0.05)
+        # self._threshold_spinbox.setValue(0.5)
 
         self._refit_settings_layout = qtw.QFormLayout()
         self._refit_settings_layout.addRow("K-fold splits", self._kfold_spinbox)
-        #self._refit_settings_layout.addRow("Probability threshold", self._threshold_spinbox)
+        # self._refit_settings_layout.addRow("Probability threshold", self._threshold_spinbox)
 
         self._refit_settings_widget = qtw.QWidget()
         self._refit_settings_widget.setLayout(self._refit_settings_layout)
@@ -102,15 +109,14 @@ class MainApp(qtw.QApplication):
         self.main_widget.add_page(self._sample_view, "Sample")
         self.main_widget.add_page(self._pipeline_widget, "Pipeline")
 
-        self.main_window = MainWindow()
+        self.main_window = MainWindow(self._plugin_loader)
         self.main_window.setCentralWidget(self.main_widget)
         window_width, _ = self.main_window.set_default_geometry()
         self.main_widget.setSizes([int(0.5 * window_width), int(0.5 * window_width)])
 
         self.main_window.import_sample_requested.connect(self.import_sample)
-        self.main_window.import_context_requested.connect(self.import_context)
-        #self.main_window.import_pipeline_requested.connect(self.import_pipeline)
-        #self.main_window.import_preproc_requested.connect(self.import_preproc)
+        self.main_window.change_preprocessor_requested.connect(self.change_preprocessor)
+        self.main_window.change_pipeline_requested.connect(self.change_pipeline)
         self.main_window.new_dataset_requested.connect(self.new_dataset)
         self.main_window.open_dataset_requested.connect(self.open_dataset)
         self.main_window.save_dataset_requested.connect(self.save_dataset)
@@ -139,19 +145,12 @@ class MainApp(qtw.QApplication):
         self.next_document(None)
 
     @qtc.pyqtSlot(str)
-    def import_preproc(self, filepath):
-        if self._is_safe_to_proceed():
-            self._preprocessor = joblib.load(filepath)
+    def change_preprocessor(self, name: str):
+        self._preprocessor = self._plugin_loader.load_preprocessor(name)
 
     @qtc.pyqtSlot(str)
-    def import_context(self, filepath):
-        if self._is_safe_to_proceed():
-            self._context = joblib.load(filepath)
-
-    @qtc.pyqtSlot(str)
-    def import_pipeline(self, filepath):
-        if self._is_safe_to_proceed():
-            self._pipe = joblib.load(filepath)
+    def change_pipeline(self, name: str):
+        self._pipeline = self._plugin_loader.load_pipeline(name)
 
     @qtc.pyqtSlot()
     def new_dataset(self):
@@ -176,12 +175,12 @@ class MainApp(qtw.QApplication):
             pdf = PyPDF2.PdfFileReader(documentpath)
             pages = [pdf.getPage(i).extractText() for i in range(pdf.getNumPages())]
             for i, pagetext in enumerate(pages):
-                if self._context.preprocessor.accepts_page(pagetext):
+                if self._preprocessor.accepts_page(pagetext):
                     pagetext = " ".join(pagetext.strip().split())
-                    snippets = self._context.preprocessor.transform(pagetext)
+                    snippets = self._preprocessor.transform(pagetext)
                     try:
-                        probas = self._context.pipeline.predict_proba(snippets)
-                        classes = self._context.pipeline.predict(snippets)
+                        probas = self._pipeline.predict_proba(snippets)
+                        classes = self._pipeline.predict(snippets)
                     except NotFittedError:
                         probas = [[0.5, 0.5]] * len(snippets)
                         classes = [0] * len(snippets)
@@ -200,8 +199,8 @@ class MainApp(qtw.QApplication):
 
     def _print_to_benchmark_view(self, performance_metrics: str):
         current_output = self._benchmark_view.toPlainText()
-        self._benchmark_view.setPlainText(current_output + self._print_to_string(performance_metrics) + "\n")
-
+        self._benchmark_view.setPlainText(
+            current_output + self._print_to_string(performance_metrics) + "\n")
 
     def _flush_benchmark_view(self):
         current_output = self._benchmark_view.toPlainText()
@@ -211,7 +210,8 @@ class MainApp(qtw.QApplication):
         self._benchmark_view.setPlainText(current_output)
 
     def _scroll_down_benchmark_view(self):
-        self._benchmark_view.verticalScrollBar().setSliderPosition(self._benchmark_view.verticalScrollBar().maximum())
+        self._benchmark_view.verticalScrollBar().setSliderPosition(
+            self._benchmark_view.verticalScrollBar().maximum())
 
     @qtc.pyqtSlot()
     def refit_pipeline(self):
@@ -220,7 +220,8 @@ class MainApp(qtw.QApplication):
         try:
             num_splits = self._kfold_spinbox.value()
             self._flush_benchmark_view()
-            self._print_to_benchmark_view("# BENCHMARKS FOR %i-FOLD VALIDATION" % num_splits)
+            self._print_to_benchmark_view(
+                "# BENCHMARKS FOR %i-FOLD VALIDATION" % num_splits)
             ss = KFold(n_splits=num_splits, shuffle=True, random_state=RANDOM_STATE)
             for i, indices in enumerate(ss.split(X, y)):
                 train_indices, test_indices = indices
@@ -229,9 +230,9 @@ class MainApp(qtw.QApplication):
                 X_test = X[test_indices]
                 y_test = y[test_indices]
 
-                self._context.pipeline.fit(X_train, y_train)
-                y_predict = self._context.pipeline.predict(X_test)
-                y_prob = self._context.pipeline.predict_proba(X_test)[:, 1]
+                self._pipeline.fit(X_train, y_train)
+                y_predict = self._pipeline.predict(X_test)
+                y_prob = self._pipeline.predict_proba(X_test)[:, 1]
                 fpr, tpr, thresholds = roc_curve(y_test, y_prob)
                 roc_auc = auc(fpr, tpr)
 
@@ -250,7 +251,7 @@ class MainApp(qtw.QApplication):
         except Exception as e:
             qtw.QMessageBox.warning(None, "Warning", repr(e))
         try:
-            self._context.pipeline.fit(X, y)
+            self._pipeline.fit(X, y)
         except Exception as e:
             qtw.QMessageBox.warning(None, "Warning", repr(e))
 

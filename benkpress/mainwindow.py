@@ -16,23 +16,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Tuple
-from PyQt5 import QtWidgets as qtw
+from typing import Tuple, List
+
 from PyQt5 import QtCore as qtc
+from PyQt5 import QtWidgets as qtw
+
+# from benkpress_plugins import get_available_preprocessors, get_available_pipelines
+from pluginloader import PluginLoader
 
 
 class MainWindow(qtw.QMainWindow):
-
     import_sample_requested = qtc.pyqtSignal(str)
     open_dataset_requested = qtc.pyqtSignal(str)
     new_dataset_requested = qtc.pyqtSignal()
     save_dataset_requested = qtc.pyqtSignal(str)
-    import_context_requested = qtc.pyqtSignal(str)
-    import_pipeline_requested = qtc.pyqtSignal(str)
-    import_preproc_requested = qtc.pyqtSignal(str)
+    change_preprocessor_requested = qtc.pyqtSignal(str)
+    change_pipeline_requested = qtc.pyqtSignal(str)
 
-    def __init__(self):
+    _plugin_loder: PluginLoader
+
+    def __init__(self, plugin_loader: PluginLoader):
         super().__init__()
+        self._plugin_loader = plugin_loader
         self.setWindowTitle("benkpress")
         self._setup_status_bar()
         self._setup_menu()
@@ -42,18 +47,53 @@ class MainWindow(qtw.QMainWindow):
 
     def _setup_menu(self):
         menu_bar = self.menuBar()  # QMenuBar
+
         file_menu = menu_bar.addMenu("File")  # QMenu
         file_menu.addAction("New dataset", self.new_dataset_requested)  # QAction
         file_menu.addAction("Open dataset", self.open_dataset_dialog)
         file_menu.addAction("Save dataset", self.save_dataset_dialog)
         file_menu.addAction("Save dataset as", self.save_dataset_dialog)
         file_menu.addSeparator()
-        file_menu.addAction("Import context", self.import_context_dialog)
-        #file_menu.addAction("Import pipeline", self.import_pipeline_dialog)
-        #file_menu.addAction("Import preprocessor", self.import_preproc_dialog)
         file_menu.addAction("Import sample", self.import_sample_dialog)
         file_menu.addSeparator()
         file_menu.addAction("Quit", self.close)
+
+        #################################################################
+        # TODO: All code from here ...
+        #################################################################
+
+        self._build_plugin_menu(menu_bar, "Preprocessors",
+                                self._plugin_loader.get_available_preprocessors(),
+                                self.request_plugin_change)
+        self._build_plugin_menu(menu_bar, "Pipelines",
+                                self._plugin_loader.get_available_pipelines(),
+                                self.request_plugin_change)
+
+    def _build_plugin_menu(self, menu_bar: qtw.QMenuBar, title: str,
+                           plugins: List[str], action: qtc.pyqtSlot(str)):
+        menu = menu_bar.addMenu(title)
+        for plugin_name in plugins:
+            action = menu.addAction(plugin_name, action)
+            action.setCheckable(True)
+
+    @qtc.pyqtSlot()
+    def request_plugin_change(self):
+        menu: qtw.QMenu = self.sender().parent()
+        for action in menu.actions():
+            action.setChecked(False)
+        action: qtw.QAction = self.sender()
+        action.setChecked(True)  # FIXME: Don't check before plugin switch confirmed
+
+        assert menu.title() in ("Preprocessors", "Pipelines")
+
+        if menu.title() == "Preprocessors":
+            self.change_preprocessor_requested.emit(action.text())
+        elif menu.title() == "Pipelines":
+            self.change_pipeline_requested.emit(action.text())
+
+    #################################################################
+    # ... to here should probably be handled by a custom QMenu/QAction class
+    #################################################################
 
     @qtc.pyqtSlot()
     def open_dataset_dialog(self):
@@ -80,36 +120,6 @@ class MainWindow(qtw.QMainWindow):
         directory = qtw.QFileDialog.getExistingDirectory(caption="Import sample")
         if directory:
             self.import_sample_requested.emit(directory)
-
-    @qtc.pyqtSlot()
-    def import_context_dialog(self):
-        filename, _ = qtw.QFileDialog.getOpenFileName(
-            caption="Import context",
-            filter="All files (*.*);;Serialized PDFClassifierContext (*.joblib)",
-            initialFilter="Serialized PDFClassifierContext (*.joblib)",
-        )
-        if filename:
-            self.import_context_requested.emit(filename)
-
-    @qtc.pyqtSlot()
-    def import_pipeline_dialog(self):
-        filename, _ = qtw.QFileDialog.getOpenFileName(
-            caption="Import pipeline",
-            filter="All files (*.*);;Serialized pipeline (*.joblib)",
-            initialFilter="Serialized pipeline (*.joblib)",
-        )
-        if filename:
-            self.import_pipeline_requested.emit(filename)
-
-    @qtc.pyqtSlot()
-    def import_preproc_dialog(self):
-        filename, _ = qtw.QFileDialog.getOpenFileName(
-            caption="Import preprocessor",
-            filter="All files (*.*);;Serialized preprocessor (*.joblib)",
-            initialFilter="Serialized preprocessor (*.joblib)",
-        )
-        if filename:
-            self.import_preproc_requested.emit(filename)
 
     def set_default_geometry(self) -> Tuple[int, int]:
         desktop_geometry = qtw.QDesktopWidget().availableGeometry()
