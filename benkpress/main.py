@@ -48,7 +48,7 @@ class MainApp(qtw.QApplication):
     _preprocessor: Preprocessor
     _pipeline: Pipeline
 
-    def __init__(self, argv: List[str]):
+    def __init__(self, argv):
         super().__init__(argv)
 
         # TODO: Should initalize all widgets in MainWidget and just connect everything
