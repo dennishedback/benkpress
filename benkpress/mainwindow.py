@@ -50,7 +50,6 @@ class MainWindow(qtw.QMainWindow):
 
         file_menu = menu_bar.addMenu("File")  # QMenu
         file_menu.addAction("New dataset", self.new_dataset_requested)  # QAction
-        file_menu.addAction("Open dataset", self.open_dataset_dialog)
         file_menu.addAction("Save dataset", self.save_dataset_dialog)
         file_menu.addAction("Save dataset as", self.save_dataset_dialog)
         file_menu.addSeparator()
@@ -62,9 +61,6 @@ class MainWindow(qtw.QMainWindow):
         # TODO: All code from here ...
         #################################################################
 
-        self._build_plugin_menu(menu_bar, "Preprocessors",
-                                self._plugin_loader.get_available_preprocessors(),
-                                self.request_plugin_change)
         self._build_plugin_menu(menu_bar, "Pipelines",
                                 self._plugin_loader.get_available_pipelines(),
                                 self.request_plugin_change)
@@ -94,16 +90,6 @@ class MainWindow(qtw.QMainWindow):
     #################################################################
     # ... to here should probably be handled by a custom QMenu/QAction class
     #################################################################
-
-    @qtc.pyqtSlot()
-    def open_dataset_dialog(self):
-        filename, _ = qtw.QFileDialog.getOpenFileName(
-            caption="Open dataset",
-            filter="All files (*.*);;Comma separated values (*.csv)",
-            initialFilter="Comma separated values (*.csv)",
-        )
-        if filename:
-            self.open_dataset_requested.emit(filename)
 
     @qtc.pyqtSlot()
     def save_dataset_dialog(self):

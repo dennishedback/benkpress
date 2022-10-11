@@ -33,6 +33,7 @@ from sklearn.metrics import classification_report, confusion_matrix, roc_curve, 
 from sklearn.model_selection import KFold
 from sklearn.pipeline import Pipeline
 
+from dialog import PreprocessorDialog
 from mainwidget import MainWidget
 from mainwindow import MainWindow
 from model import DataframeTableModel, SampleStringStackModel
@@ -64,8 +65,9 @@ class MainApp(qtw.QApplication):
         self._sample_model = SampleStringStackModel()
 
         self._dataset_view = qtw.QTableView()
-        self._dataset_view.setModel(self._dataset_model)
+        # self._dataset_view.setModel(self._dataset_model)
         # self._dataset_model.dataChanged.connect(self._dataset_view.update)
+
         self._sample_view = qtw.QListView()
         self._sample_view.setModel(self._sample_model)
 
@@ -115,15 +117,15 @@ class MainApp(qtw.QApplication):
         self.main_widget.setSizes([int(0.5 * window_width), int(0.5 * window_width)])
 
         self.main_window.import_sample_requested.connect(self.import_sample)
-        self.main_window.change_preprocessor_requested.connect(self.change_preprocessor)
         self.main_window.change_pipeline_requested.connect(self.change_pipeline)
         self.main_window.new_dataset_requested.connect(self.new_dataset)
-        self.main_window.open_dataset_requested.connect(self.open_dataset)
         self.main_window.save_dataset_requested.connect(self.save_dataset)
         self.main_widget.next_document_requested.connect(self.next_document)
         self._refit_button.clicked.connect(self.refit_pipeline)
 
         self.main_window.show()
+        self.preprocessor_dialog = PreprocessorDialog(self._plugin_loader)
+        self.new_dataset()
 
     def _is_safe_to_proceed(self) -> bool:
         if not self._dataset_model.is_saved():
@@ -145,24 +147,18 @@ class MainApp(qtw.QApplication):
         self.next_document(None)
 
     @qtc.pyqtSlot(str)
-    def change_preprocessor(self, name: str):
-        self._preprocessor = self._plugin_loader.load_preprocessor(name)
-
-    @qtc.pyqtSlot(str)
     def change_pipeline(self, name: str):
         self._pipeline = self._plugin_loader.load_pipeline(name)
 
     @qtc.pyqtSlot()
     def new_dataset(self):
-        if self._is_safe_to_proceed():
-            self._dataset_model = DataframeTableModel()
-            self._dataset_view.setModel(self._dataset_model)
-
-    @qtc.pyqtSlot(str)
-    def open_dataset(self, filepath):
-        if self._is_safe_to_proceed():
-            self._dataset_model = DataframeTableModel.load(filepath)
-            self._dataset_view.setModel(self._dataset_model)
+        if not self._is_safe_to_proceed():
+            return
+        self._dataset_model = DataframeTableModel()
+        self._preprocessor = self._plugin_loader.load_preprocessor(
+            self.preprocessor_dialog.get_chosen_preprocessor())
+        self._dataset_view.setModel(self._dataset_model)
+        self.preprocessor_dialog.exec()
 
     @qtc.pyqtSlot(str)
     def save_dataset(self, filepath):
@@ -179,6 +175,8 @@ class MainApp(qtw.QApplication):
                     pagetext = " ".join(pagetext.strip().split())
                     snippets = self._preprocessor.transform(pagetext)
                     try:
+                        if not self._pipeline:
+                            raise NotFittedError
                         probas = self._pipeline.predict_proba(snippets)
                         classes = self._pipeline.predict(snippets)
                     except NotFittedError:
