@@ -16,16 +16,12 @@ setup(
     url="https://github.com/dennishedback/benkpress",
     packages=["benkpress"],
     install_requires=[
-        # TODO: Check if all these are necessary
-        "imbalanced-learn",
-        "joblib",
-        "numpy",
+        "benkpress-plugin-api @ git+ssh://git@github.com/dennishedback/benkpress-plugin-api.git"
         "pandas",
         "PyPDF2",
         "PyQt5",
         "PyQtWebEngine",
         "sklearn",
-        "xgboost",
     ],
     entry_points={
         "console_scripts": ["benkpress=benkpress.main:main"],
