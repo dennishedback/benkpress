@@ -15,7 +15,12 @@ optical text recognition errors?
 
 ## Usage at a glance
 
-Not yet described.
+1. Interface with benkpress-plugin-api to create your custom sklearn compatible pipeline
+   as well as any preprocessing routines you need.
+2. Install your pipeline and preprocessor as plugins using the setuptools entrypoints
+   specified by benkpress-plugin-api.
+3. Load your preprocessor and pipeline in benkpress and use the GUI to tag training data.
+4. Save your dataset for later use.
 
 ## The benkpress plugin API
 
