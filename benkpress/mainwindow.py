@@ -69,8 +69,8 @@ class MainWindow(qtw.QMainWindow):
                            plugins: List[str], action: qtc.pyqtSlot(str)):
         menu = menu_bar.addMenu(title)
         for plugin_name in plugins:
-            action = menu.addAction(plugin_name, action)
-            action.setCheckable(True)
+            item = menu.addAction(plugin_name, action)
+            item.setCheckable(True)
 
     @qtc.pyqtSlot()
     def request_plugin_change(self):
