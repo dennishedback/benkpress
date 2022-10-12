@@ -15,96 +15,15 @@ optical text recognition errors?
 
 ## Usage at a glance
 
-1. Create your sklearn compatible pipeline using the Python console or any other preferred method.
-2. Pickle it using joblib.
-3. Load your joblib pickle into benkpress.
-4. Use benkpress to train your pipeline (or evaluate an already fitted pipeline).
-5. Pickle your fitted pipeline for use in other applications. <- wrong
-6. benkpress exports your training data so that your pipeline may be easily refitted using either newer versions of sklearn or on other platforms.
-7. Have fun.
+Not yet described.
 
-## The benkpress API
+## The benkpress plugin API
 
-Lorem ipsum dolor sit amet.
+Not yet described.
 
 ## Examples
 
-### Page classifer
-
-In this example, we'll tag training data for an [XGBoost](https://github.com/dmlc/xgboost) classifier to identify an arbitrary class of pages
-in a sample of PDF documents. The pages are classified according to their vocabulary characteristics by first tokenizing
-the page content using a [TfidfVectorizer](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html).
-Since we are classifying pages instead of, for example, sentences, we can use the `PassthroughPagePreprocessor` from benkpress_api.
-The resulting `PDFClassifierContext` is saved to file using joblib:
-
-
-```python
-
-import joblib
-
-from benkpress_api import PassthroughPagePreprocessor, PDFClassifierContext
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.pipeline import Pipeline
-from xgboost import XGBClassifier
-
-RANDOM_STATE = 999
-
-context = PDFClassifierContext(
-    PassthroughPagePreprocessor(),
-    Pipeline([
-        ("Vectorizer", TfidfVectorizer(use_idf=True, max_features=None, stop_words=None)),
-        ("Classifier", XGBClassifier(n_estimators=1000, random_state=RANDOM_STATE))
-    ])
-)
-
-joblib.dump(context, "pagecontext.joblib")
-
-
-```
-
-The context is loaded in benkpress by selecting File -> Import context:
-
-![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context1.png)
-
-After this, we choose a folder containing a sample of PDFs for tagging the training data:
-
-![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/import_context3.png)
-
-A PDF will appear in the reader and the preprocessed data points will appear to the right.
-Note that since we are using `PassthroughPagePreprocessor`, each data point will be the text of
-each respective page. If we instead wanted to classify sentences, we would have to implement a
-custom preprocessor, probably using some NLP tools.
-
-We can now look through the PDF and tag which pages are of the relevant class
-by changing the values in the rightmost column from 0 to 1. When we are done tagging, we click the
-button ">>> Next document >>>" in the lower left corner and the next PDF in the sample will appear
-in the reader:
-
-![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress1.png)
-
-After we have tagged some pages of the relevant class, the classifier provided in our
-imported context can be evaluated, as well as help out with tagging. On the "Pipeline" tab,
-click the "Refit pipeline" button. K-fold cross validation metrics will appear in the
-view above the button:
-
-![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress2.png)
-
-The next time a new document is loaded, the fitted classifier pipeline will make a prediction.
-This serves two purposes. The first is to aid with identifying relevant pages, although care
-must be taken to not trust the classifier too much for this. The second is to get a feeling for
-how well it fulfills its job, and thus when we can stop tagging. After each refitting with additional training data,
-ts predictions will become more accurate:
-
-![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress3.png)
-
-When the classifier is accurate enough, we can export the dataset to a CSV file so that
-we can refit the classifier from the data, for use in other applications:
-
-![Load context](https://github.com/dennishedback/benkpress/raw/main/examples/benkpress4.png)
-
-### Sentence classifier
-
-Lorem ipsum dolor sit amet.
+Not yet described.
 
 ## benkpress?
 
