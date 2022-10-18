@@ -36,7 +36,7 @@ from sklearn.pipeline import Pipeline
 from dialog import PreprocessorDialog
 from mainwidget import MainWidget
 from mainwindow import MainWindow
-from model import DataframeTableModel, SampleStringStackModel
+from dataset import DataframeTableModel, SampleStringStackModel
 from pdfjswebengineview import PDFJSWebEngineView
 from pluginloader import PluginLoader
 
@@ -140,7 +140,7 @@ class MainApp(qtw.QApplication):
 
     @qtc.pyqtSlot(str)
     def import_sample(self, directorypath):
-        # FIXME: Gracefully handle incorrect file paths
+        # FIXME: Gracefully handle incorrect file paths, and use pathlib!
         files = [os.path.join(directorypath, f) for f in os.scandir(directorypath)]
         random.shuffle(files)
         self._sample_model.setStringList(files)

@@ -22,7 +22,7 @@ from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtWebEngineWidgets as qtweb
 from PyQt5 import QtCore as qtc
 
-from model import DataframeTableModel
+from dataset import DataframeTableModel
 
 from pdfjswebengineview import PDFJSWebEngineView
 

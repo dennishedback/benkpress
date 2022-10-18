@@ -16,14 +16,19 @@ setup(
     url="https://github.com/dennishedback/benkpress",
     packages=["benkpress"],
     install_requires=[
-        "benkpress-plugin-api @ git+ssh://git@github.com/dennishedback/benkpress-plugin-api.git"
+        "benkpress-plugin-api @ git+ssh://git@github.com/dennishedback/benkpress-plugin-api.git",
         "pandas",
         "PyPDF2",
         "PyQt5",
         "PyQtWebEngine",
         "sklearn",
+        "docopt",
     ],
     entry_points={
-        "console_scripts": ["benkpress=benkpress.main:main"],
+        "console_scripts": [
+            "benkpress=benkpress.main:main",
+            "benkpress-filter-sample=benkpress.sample:_filter_sample_main",
+            "benkpress-merge-datasets=benkpress.dataset:_merge_datasets_main",
+        ],
     },
 )
