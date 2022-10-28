@@ -155,10 +155,10 @@ class MainApp(qtw.QApplication):
         if not self._is_safe_to_proceed():
             return
         self._dataset_model = DataframeTableModel()
+        self.preprocessor_dialog.exec()
         self._preprocessor = self._plugin_loader.load_preprocessor(
             self.preprocessor_dialog.get_chosen_preprocessor())
         self._dataset_view.setModel(self._dataset_model)
-        self.preprocessor_dialog.exec()
 
     @qtc.pyqtSlot(str)
     def save_dataset(self, filepath):
