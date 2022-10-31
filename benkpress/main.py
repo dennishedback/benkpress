@@ -271,4 +271,4 @@ def main():
     return app.exec_()
 
 if __name__ == "__main__":
-    sys.exit(MainApp.main())
+    sys.exit(main())
