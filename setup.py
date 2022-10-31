@@ -18,7 +18,7 @@ setup(
     url="https://github.com/dennishedback/benkpress",
     packages=["benkpress"],
     install_requires=[
-        "benkpress-plugin-api @ git+https://git@github.com/dennishedback/benkpress-plugin-api.git",
+        "benkpress-plugin-api",
         "pandas>=1.4.2",
         "numpy>=1.22.4",
         "PyPDF2",
