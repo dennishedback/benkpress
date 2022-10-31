@@ -44,9 +44,5 @@ valid Python package name.
 
 ## Known issues
 
-- When trying to fit a classifier from a dataset which was loaded from file instead
-  of generated in the application, an exception is thrown.
-- If a sample is imported before the application has a valid context, the application
-  will crash.
-
+- Unable to create new dataset once sample is imported
 
