@@ -16,13 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Tuple, List
+from typing import List, Tuple
 
 from PyQt5 import QtCore as qtc
 from PyQt5 import QtWidgets as qtw
 
 # from benkpress_plugins import get_available_preprocessors, get_available_pipelines
-from pluginloader import PluginLoader
+from benkpress.pluginloader import PluginLoader
 
 
 class MainWindow(qtw.QMainWindow):

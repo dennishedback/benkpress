@@ -17,7 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path
-from settings import pdfjs
+
+from benkpress.settings import pdfjs
 
 if not os.path.exists(pdfjs):
     raise Exception(
@@ -31,9 +32,9 @@ if not os.path.exists(pdfjs):
 
 import urllib.parse
 
-from PyQt5 import QtWidgets as qtw
-from PyQt5 import QtWebEngineWidgets as qtweb
 from PyQt5 import QtCore as qtc
+from PyQt5 import QtWebEngineWidgets as qtweb
+from PyQt5 import QtWidgets as qtw
 
 
 class PDFJSWebEngineView(qtweb.QWebEngineView):

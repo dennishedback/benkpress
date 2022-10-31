@@ -18,13 +18,12 @@
 
 import urllib.parse
 
-from PyQt5 import QtWidgets as qtw
-from PyQt5 import QtWebEngineWidgets as qtweb
 from PyQt5 import QtCore as qtc
+from PyQt5 import QtWebEngineWidgets as qtweb
+from PyQt5 import QtWidgets as qtw
 
-from dataset import DataframeTableModel
-
-from pdfjswebengineview import PDFJSWebEngineView
+from benkpress.dataset import DataframeTableModel
+from benkpress.pdfjswebengineview import PDFJSWebEngineView
 
 
 class MainWidget(qtw.QSplitter):

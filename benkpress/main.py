@@ -22,23 +22,24 @@ import os
 import random
 import sys
 
-import PyPDF2
 import pandas as pd
+import PyPDF2
+from benkpress_plugins.preprocessors import Preprocessor
 from PyQt5 import QtCore as qtc
 from PyQt5 import QtGui as qtg
 from PyQt5 import QtWidgets as qtw
-from benkpress_plugins.preprocessors import Preprocessor
 from sklearn.exceptions import NotFittedError
-from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
+from sklearn.metrics import (auc, classification_report, confusion_matrix,
+                             roc_curve)
 from sklearn.model_selection import KFold
 from sklearn.pipeline import Pipeline
 
-from dialog import PreprocessorDialog
-from mainwidget import MainWidget
-from mainwindow import MainWindow
-from dataset import DataframeTableModel, SampleStringStackModel
-from pdfjswebengineview import PDFJSWebEngineView
-from pluginloader import PluginLoader
+from benkpress.dataset import DataframeTableModel, SampleStringStackModel
+from benkpress.dialog import PreprocessorDialog
+from benkpress.mainwidget import MainWidget
+from benkpress.mainwindow import MainWindow
+from benkpress.pdfjswebengineview import PDFJSWebEngineView
+from benkpress.pluginloader import PluginLoader
 
 RANDOM_STATE = 999
 
@@ -263,11 +264,11 @@ class MainApp(qtw.QApplication):
             pass  # TODO: Implement workspace recovery
             return 1
 
-    @classmethod
-    def main(cls):
-        app = cls(sys.argv)
-        return app.exec_()
 
+def main():
+    """The main application entrypoint."""
+    app = MainApp(sys.argv)
+    return app.exec_()
 
 if __name__ == "__main__":
     sys.exit(MainApp.main())
