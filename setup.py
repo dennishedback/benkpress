@@ -24,7 +24,7 @@ setup(
         "PyPDF2",
         "PyQt5",
         "PyQtWebEngine",
-        "sklearn",
+        "scikit-learn",
         "docopt",
         "appdirs",
     ],
