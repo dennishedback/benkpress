@@ -1,7 +1,5 @@
-#! /usr/bin/env python3
-
 # benkpress
-# Copyright (C) 2022 Dennis Hedback
+# Copyright (C) 2022-2023 Dennis Hedback
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,14 +15,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
+
 from typing import Any
 
 import pandas as pd
 from docopt import docopt
-
-# import pandas.util
-
-from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
 from PyQt5 import QtGui as qtg
 
@@ -67,7 +62,7 @@ class DataframeTableModel(qtc.QAbstractTableModel):
 
     def appendRow(self, filename: str, page: int, text: str, proba: float, class_: int):
         self.beginInsertRows(qtc.QModelIndex(), self.rowCount(), self.rowCount())
-        self._df = self._df.append(
+        new_row = pd.DataFrame(
             {
                 "file": filename,
                 "page": page,
@@ -75,8 +70,9 @@ class DataframeTableModel(qtc.QAbstractTableModel):
                 "proba": proba,
                 "class": int(class_),
             },
-            ignore_index=True,
+            index=[0],
         )
+        self._df = pd.concat([self._df.loc[:], new_row]).reset_index(drop=True)
         self.endInsertRows()
         self.layoutChanged.emit()
 
@@ -127,6 +123,7 @@ class DataframeTableModel(qtc.QAbstractTableModel):
             return qtc.Qt.ItemIsEditable | super().flags(index)
         else:
             return super().flags(index)
+
 
 def _merge_datasets_main():
     """
