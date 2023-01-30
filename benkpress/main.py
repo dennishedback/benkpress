@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 # benkpress
-# Copyright (C) 2022 Dennis Hedback
+# Copyright (C) 2022-2023 Dennis Hedback
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,19 +21,19 @@ import io
 import os
 import random
 import sys
+from pathlib import Path
 
 import pandas as pd
-import PyPDF2
 from benkpress_plugins.preprocessors import Preprocessor
 from PyQt5 import QtCore as qtc
 from PyQt5 import QtGui as qtg
 from PyQt5 import QtWidgets as qtw
 from sklearn.exceptions import NotFittedError
-from sklearn.metrics import (auc, classification_report, confusion_matrix,
-                             roc_curve)
+from sklearn.metrics import auc, classification_report, confusion_matrix, roc_curve
 from sklearn.model_selection import KFold
 from sklearn.pipeline import Pipeline
 
+from benkpress.api.reader import PyPDFReader, Reader, TesseractReader
 from benkpress.dataset import DataframeTableModel, SampleStringStackModel
 from benkpress.dialog import PreprocessorDialog
 from benkpress.mainwidget import MainWidget
@@ -49,6 +49,7 @@ class MainApp(qtw.QApplication):
 
     _preprocessor: Preprocessor
     _pipeline: Pipeline
+    _reader: Reader
 
     def __init__(self, argv):
         super().__init__(argv)
@@ -58,6 +59,8 @@ class MainApp(qtw.QApplication):
 
         self._pipeline = None  # Should be some default value instead!
         self._preprocessor = None  # Should be some default value instead!
+        # TODO: Add support for changing the reader in the GUI.
+        self._reader = PyPDFReader()
 
         self._plugin_loader = PluginLoader()
 
@@ -158,7 +161,8 @@ class MainApp(qtw.QApplication):
         self._dataset_model = DataframeTableModel()
         self.preprocessor_dialog.exec()
         self._preprocessor = self._plugin_loader.load_preprocessor(
-            self.preprocessor_dialog.get_chosen_preprocessor())
+            self.preprocessor_dialog.get_chosen_preprocessor()
+        )
         self._dataset_view.setModel(self._dataset_model)
 
     @qtc.pyqtSlot(str)
@@ -169,9 +173,7 @@ class MainApp(qtw.QApplication):
     def next_document(self, _):
         if self._sample_model.rowCount():
             documentpath = self._sample_model.pop()
-            pdf = PyPDF2.PdfFileReader(documentpath)
-            pages = [pdf.getPage(i).extractText() for i in range(pdf.getNumPages())]
-            for i, pagetext in enumerate(pages):
+            for i, pagetext in enumerate(self._reader.read(Path(documentpath))):
                 if self._preprocessor.accepts_page(pagetext):
                     pagetext = " ".join(pagetext.strip().split())
                     snippets = self._preprocessor.transform(pagetext)
@@ -199,7 +201,8 @@ class MainApp(qtw.QApplication):
     def _print_to_benchmark_view(self, performance_metrics: str):
         current_output = self._benchmark_view.toPlainText()
         self._benchmark_view.setPlainText(
-            current_output + self._print_to_string(performance_metrics) + "\n")
+            current_output + self._print_to_string(performance_metrics) + "\n"
+        )
 
     def _flush_benchmark_view(self):
         current_output = self._benchmark_view.toPlainText()
@@ -210,7 +213,8 @@ class MainApp(qtw.QApplication):
 
     def _scroll_down_benchmark_view(self):
         self._benchmark_view.verticalScrollBar().setSliderPosition(
-            self._benchmark_view.verticalScrollBar().maximum())
+            self._benchmark_view.verticalScrollBar().maximum()
+        )
 
     @qtc.pyqtSlot()
     def refit_pipeline(self):
@@ -220,7 +224,8 @@ class MainApp(qtw.QApplication):
             num_splits = self._kfold_spinbox.value()
             self._flush_benchmark_view()
             self._print_to_benchmark_view(
-                "# BENCHMARKS FOR %i-FOLD VALIDATION" % num_splits)
+                "# BENCHMARKS FOR %i-FOLD VALIDATION" % num_splits
+            )
             ss = KFold(n_splits=num_splits, shuffle=True, random_state=RANDOM_STATE)
             for i, indices in enumerate(ss.split(X, y)):
                 train_indices, test_indices = indices
@@ -239,9 +244,7 @@ class MainApp(qtw.QApplication):
                 self._print_to_benchmark_view("Accuracy, precision, recall:")
                 self._print_to_benchmark_view(classification_report(y_test, y_predict))
                 self._print_to_benchmark_view("Confusion matrix:")
-                self._print_to_benchmark_view(
-                    confusion_matrix(y_test, y_predict)
-                )
+                self._print_to_benchmark_view(confusion_matrix(y_test, y_predict))
                 self._print_to_benchmark_view("AUROC:")
                 self._print_to_benchmark_view(str(roc_auc))
 
@@ -270,5 +273,6 @@ def main():
     app = MainApp(sys.argv)
     return app.exec_()
 
+
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

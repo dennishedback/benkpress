@@ -8,7 +8,7 @@ THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 setup(
     name="benkpress",
-    version="0.1.1",
+    version="0.1.2",
     description="PyQt/PDFJs GUI for creating and evaluating classifiers for PDF"
     "file/page/sentence targets using sklearn compatible pipelines",
     long_description=open(os.path.join(THIS_DIR, "README.md")).read(),
@@ -21,9 +21,11 @@ setup(
         "benkpress-plugin-api",
         "pandas>=1.4.2",
         "numpy>=1.22.4",
-        "PyPDF2",
+        "pdf2image",
+        "pytesseract",
         "PyQt5",
         "PyQtWebEngine",
+        "PyPDF2<=2.12.1",
         "scikit-learn",
         "docopt",
         "appdirs",
