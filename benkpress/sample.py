@@ -21,9 +21,8 @@
 from pathlib import Path
 from shutil import copy
 
-from docopt import docopt
-
 import pandas as pd
+from docopt import docopt
 
 
 def filter_sample(source_folder: Path, target_folder: Path, dataset_path: Path):
