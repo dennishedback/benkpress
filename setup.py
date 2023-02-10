@@ -16,7 +16,7 @@ setup(
     author="Dennis Hedback",
     author_email="d.hedback@gmail.com",
     url="https://github.com/dennishedback/benkpress",
-    packages=["benkpress"],
+    packages=["benkpress", "benkpress.api", "benkpress.scripts"],
     install_requires=[
         "benkpress-plugin-api",
         "pandas>=1.4.2",
@@ -33,8 +33,8 @@ setup(
     entry_points={
         "console_scripts": [
             "benkpress=benkpress.main:main",
-            "benkpress-filter-sample=benkpress.sample:_filter_sample_main",
-            "benkpress-merge-datasets=benkpress.dataset:_merge_datasets_main",
+            "benkpress-filter-sample=benkpress.scripts.filter_sample:main",
+            "benkpress-merge-datasets=benkpress.scripts.merge_datasets:main",
         ],
     },
 )

@@ -19,7 +19,6 @@ from __future__ import annotations
 from typing import Any
 
 import pandas as pd
-from docopt import docopt
 from PyQt5 import QtCore as qtc
 from PyQt5 import QtGui as qtg
 
@@ -125,17 +124,3 @@ class DataframeTableModel(qtc.QAbstractTableModel):
             return super().flags(index)
 
 
-def _merge_datasets_main():
-    """
-    Usage: benkpress-merge-datasets <src1> <src2> <dst>
-
-    Options:
-        -h --help       Show this help screen.
-        -v --version    Show version information.
-    """
-    args = docopt(_merge_datasets_main.__doc__)
-    df1 = pd.read_csv(args["<src1>"], index_col=0)
-    df2 = pd.read_csv(args["<src2>"], index_col=0)
-    dst = pd.concat([df1, df2])
-    dst.to_csv(args["<dst>"])
-    return 0
