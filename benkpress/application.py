@@ -70,8 +70,6 @@ class MainApp(qtw.QApplication):
         self._sample_model = SampleStringStackModel()
 
         self._dataset_view = qtw.QTableView()
-        # self._dataset_view.setModel(self._dataset_model)
-        # self._dataset_model.dataChanged.connect(self._dataset_view.update)
 
         self._sample_view = qtw.QListView()
         self._sample_view.setModel(self._sample_model)
@@ -89,15 +87,8 @@ class MainApp(qtw.QApplication):
         self._kfold_spinbox.setMinimum(0)
         self._kfold_spinbox.setValue(5)
 
-        # self._threshold_spinbox = qtw.QDoubleSpinBox()
-        # self._threshold_spinbox.setMaximum(1.0)
-        # self._threshold_spinbox.setMinimum(0.0)
-        # self._threshold_spinbox.setSingleStep(0.05)
-        # self._threshold_spinbox.setValue(0.5)
-
         self._refit_settings_layout = qtw.QFormLayout()
         self._refit_settings_layout.addRow("K-fold splits", self._kfold_spinbox)
-        # self._refit_settings_layout.addRow("Probability threshold", self._threshold_spinbox)
 
         self._refit_settings_widget = qtw.QWidget()
         self._refit_settings_widget.setLayout(self._refit_settings_layout)

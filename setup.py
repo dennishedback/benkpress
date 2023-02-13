@@ -31,7 +31,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "benkpress=benkpress.main:main",
+            "benkpress=benkpress.application:main",
             "benkpress-filter-sample=benkpress.scripts.filter_sample:main",
             "benkpress-merge-datasets=benkpress.scripts.merge_datasets:main",
         ],
