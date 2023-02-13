@@ -29,7 +29,8 @@ from PyQt5 import QtCore as qtc
 from PyQt5 import QtGui as qtg
 from PyQt5 import QtWidgets as qtw
 from sklearn.exceptions import NotFittedError
-from sklearn.metrics import auc, classification_report, confusion_matrix, roc_curve
+from sklearn.metrics import (auc, classification_report, confusion_matrix,
+                             roc_curve)
 from sklearn.model_selection import KFold
 from sklearn.pipeline import Pipeline
 
