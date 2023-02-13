@@ -37,6 +37,7 @@ class TesseractReader:
         self, poppler_path: str, pytesseract_path: str, lang: str, dpi: int = 100
     ):
         # FIXME: Add support to set language, dpi, paths in the GUI
+        # FIXME: Error handling for incorrect paths
         pytesseract.pytesseract.tesseract_cmd = pytesseract_path
         self.poppler_path = poppler_path
         self.lang = lang
@@ -48,7 +49,7 @@ class TesseractReader:
 
 
 class PyPDFReader:
-    """A reader that uses PyPDF2 to read PDF files. Fast but not very precise."""
+    """A reader that uses PyPDF2 to read PDF files. Fast but not very precise. Mostly used for testing."""
 
     def read(self, filepath: Path) -> list[str]:
         with filepath.open("rb") as f:
