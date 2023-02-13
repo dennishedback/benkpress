@@ -18,7 +18,6 @@ setup(
     url="https://github.com/dennishedback/benkpress",
     packages=["benkpress", "benkpress.api", "benkpress.scripts"],
     install_requires=[
-        "benkpress-plugin-api",
         "pandas>=1.4.2",
         "numpy>=1.22.4",
         "pdf2image",
