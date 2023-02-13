@@ -2,7 +2,7 @@
 
 import os
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -16,7 +16,7 @@ setup(
     author="Dennis Hedback",
     author_email="d.hedback@gmail.com",
     url="https://github.com/dennishedback/benkpress",
-    packages=["benkpress", "benkpress.api", "benkpress.scripts", "benkpress.view", "benkpress.viewmodel", "benkpress.model"],
+    packages=find_packages(),
     install_requires=[
         "pandas>=1.4.2",
         "numpy>=1.22.4",
