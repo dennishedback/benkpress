@@ -1,7 +1,5 @@
-#! /usr/bin/env python3
-
 # benkpress
-# Copyright (C) 2022 Dennis Hedback
+# Copyright (C) 2022-2023 Dennis Hedback
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,8 +15,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path
+import urllib.parse
+from pathlib import Path
 
-from benkpress.settings import pdfjs
+import PyQt6.QtCore as qtc
+import PyQt6.QtWebEngineWidgets as qtweb
+from appdirs import user_data_dir
+
+pdfjs = Path(user_data_dir("benkpress", "dennishedback")) / "pdfjs" / "web" / "viewer.html"
+
+# FIXME: Should be able to do this using only pathlib
 
 if not os.path.exists(pdfjs):
     raise Exception(
@@ -30,16 +36,9 @@ if not os.path.exists(pdfjs):
         "PDF.js accordingly." % (pdfjs),
     )
 
-import urllib.parse
-
-from PyQt5 import QtCore as qtc
-from PyQt5 import QtWebEngineWidgets as qtweb
-from PyQt5 import QtWidgets as qtw
-
-
-class PDFJSWebEngineView(qtweb.QWebEngineView):
-    def __init__(self):
-        super().__init__()
+class PDFView(qtweb.QWebEngineView):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
 
     def load(self, filepath: str) -> None:
         filepath_encoded = urllib.parse.quote(filepath)
@@ -47,3 +46,5 @@ class PDFJSWebEngineView(qtweb.QWebEngineView):
             "%s?file=%s#pagemode=thumbs" % (pdfjs.as_uri(), filepath_encoded)
         )
         super().load(url)
+
+

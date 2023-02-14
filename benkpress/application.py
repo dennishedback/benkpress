@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 # benkpress
 # Copyright (C) 2022-2023 Dennis Hedback
 #
@@ -18,6 +16,10 @@
 
 
 import sys
+from typing import List
+
+import PyQt6.QtCore as qtc
+import PyQt6.QtWidgets as qtw
 
 from benkpress.view.mainwindow import Ui_MainWindow
 
@@ -30,21 +32,33 @@ class MainWindow(qtw.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-    
-
 class Application(qtw.QApplication):
     """The main application object."""
 
-    def __init__(self, argv: Sequence[str]):
+    main_window: MainWindow
+
+    def __init__(self, argv: List[str]):
         super().__init__(argv)
-        self._main_window = MainWindow()
-        self._main_window.show()
+        self._init_ui()
+        self._connect_signals()
+        self.main_window.ui.web_engine_view.load(r"C:\Users\denhed\Downloads\Dennis Hedback.pdf")
+
+    def _init_ui(self):
+        """Initialize the user interface."""
+        self.main_window = MainWindow()
+        self.main_window.show()
+
+    def _connect_signals(self):
+        """Connect signals to slots."""
+        self.main_window.ui.next_document.clicked.connect(lambda: print("Next document!"))
+
+
 
 
 def main():
     """The main application entrypoint."""
     app = Application(sys.argv)
-    return app.exec_()
+    return app.exec()
 
 
 if __name__ == "__main__":

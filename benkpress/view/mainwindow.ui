@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>825</width>
+    <height>591</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>benkpress2</string>
+  </property>
+  <widget class="QWidget" name="main_widget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QSplitter" name="main_splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="PDFView" name="web_engine_view" native="true"/>
+      <widget class="QWidget" name="verticalLayoutWidget">
+       <layout class="QVBoxLayout" name="sidebar_layout">
+        <item>
+         <widget class="QTabWidget" name="tabs">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="dataset_tab">
+           <attribute name="title">
+            <string>Dataset</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QTableView" name="dataset"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="sample_tab">
+           <attribute name="title">
+            <string>Sample</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QListView" name="sample"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="pipeline_tab">
+           <attribute name="title">
+            <string>Pipeline</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QPlainTextEdit" name="validation_results"/>
+            </item>
+            <item>
+             <layout class="QFormLayout" name="validation_settings_layout">
+              <item row="0" column="1">
+               <widget class="QSpinBox" name="kfold_splits"/>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="kfold_label">
+                <property name="text">
+                 <string>K-fold splits</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QPushButton" name="refit_pipeline">
+              <property name="text">
+               <string>Refit pipeline</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="next_document">
+          <property name="text">
+           <string>&gt;&gt;&gt; Next document &gt;&gt;&gt;</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menu_bar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>825</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_file">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="action_new_dataset"/>
+    <addaction name="separator"/>
+    <addaction name="action_save_dataset"/>
+    <addaction name="action_save_dataset_as"/>
+    <addaction name="separator"/>
+    <addaction name="action_import_sample"/>
+    <addaction name="separator"/>
+    <addaction name="actionExport_dataset"/>
+    <addaction name="separator"/>
+    <addaction name="action_exit"/>
+   </widget>
+   <widget class="QMenu" name="menu_help">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="action_about"/>
+   </widget>
+   <addaction name="menu_file"/>
+   <addaction name="menu_help"/>
+  </widget>
+  <widget class="QStatusBar" name="status_bar"/>
+  <action name="action_about">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="action_new_dataset">
+   <property name="text">
+    <string>New dataset</string>
+   </property>
+  </action>
+  <action name="action_save_dataset">
+   <property name="text">
+    <string>Save dataset</string>
+   </property>
+  </action>
+  <action name="action_save_dataset_as">
+   <property name="text">
+    <string>Save dataset as</string>
+   </property>
+  </action>
+  <action name="action_import_sample">
+   <property name="text">
+    <string>Import sample</string>
+   </property>
+  </action>
+  <action name="action_exit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionExport_dataset">
+   <property name="text">
+    <string>Export dataset</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PDFView</class>
+   <extends>QWidget</extends>
+   <header>benkpress.widget</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
