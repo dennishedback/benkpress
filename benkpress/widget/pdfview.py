@@ -22,6 +22,8 @@ import PyQt6.QtCore as qtc
 import PyQt6.QtWebEngineWidgets as qtweb
 from appdirs import user_data_dir
 
+# TODO: Decide where this setting should be stored
+
 pdfjs = Path(user_data_dir("benkpress", "dennishedback")) / "pdfjs" / "web" / "viewer.html"
 
 # FIXME: Should be able to do this using only pathlib

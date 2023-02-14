@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file '.\benkpress\view\mainwindow.ui'
+# Form implementation generated from reading ui file '.\benkpress\ui\mainwindow.ui'
 #
 # Created by: PyQt6 UI code generator 6.4.2
 #
@@ -132,4 +132,4 @@ class Ui_MainWindow(object):
         self.action_import_sample.setText(_translate("MainWindow", "Import sample"))
         self.action_exit.setText(_translate("MainWindow", "Exit"))
         self.actionExport_dataset.setText(_translate("MainWindow", "Export dataset"))
-from benkpress.widget import PDFView
+from benkpress.widget.pdfview import PDFView

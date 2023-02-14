@@ -18,19 +18,10 @@
 import sys
 from typing import List
 
-import PyQt6.QtCore as qtc
 import PyQt6.QtWidgets as qtw
 
-from benkpress.view.mainwindow import Ui_MainWindow
+from benkpress.widget.mainwindow import MainWindow
 
-
-class MainWindow(qtw.QMainWindow):
-    """The main window of the application."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
 
 class Application(qtw.QApplication):
     """The main application object."""
