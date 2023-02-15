@@ -24,7 +24,9 @@ from appdirs import user_data_dir
 
 # TODO: Decide where this setting should be stored
 
-pdfjs = Path(user_data_dir("benkpress", "dennishedback")) / "pdfjs" / "web" / "viewer.html"
+pdfjs = (
+    Path(user_data_dir("benkpress", "dennishedback")) / "pdfjs" / "web" / "viewer.html"
+)
 
 # FIXME: Should be able to do this using only pathlib
 
@@ -38,6 +40,7 @@ if not os.path.exists(pdfjs):
         "PDF.js accordingly." % (pdfjs),
     )
 
+
 class PDFView(qtweb.QWebEngineView):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -48,5 +51,3 @@ class PDFView(qtweb.QWebEngineView):
             "%s?file=%s#pagemode=thumbs" % (pdfjs.as_uri(), filepath_encoded)
         )
         super().load(url)
-
-
