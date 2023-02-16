@@ -32,5 +32,9 @@ setup(
             "benkpress-filter-sample=benkpress.scripts.filter_sample:main",
             "benkpress-merge-datasets=benkpress.scripts.merge_datasets:main",
         ],
+        "benkpress_plugins.page_filters": [
+            "Passthrough=benkpress.plugin:PassthroughPageClassifier"
+        ],
+        "benkpress_plugins.pipelines": ["Dummy=benkpress.plugin:DummyPipeline"],
     },
 )

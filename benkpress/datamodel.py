@@ -16,11 +16,35 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from enum import Enum
 from typing import Any
 
 import pandas as pd
-from PyQt5 import QtCore as qtc
-from PyQt5 import QtGui as qtg
+from PyQt6 import QtCore as qtc
+from PyQt6 import QtGui as qtg
+from sklearn.pipeline import Pipeline
+
+from benkpress.api.reader import Reader
+
+
+@dataclass
+class Session:
+    """Describes a tagging session of the application."""
+
+    class Target(Enum):
+        """Describes the target of a tagging session."""
+
+        FILE = 1
+        PAGE = 2
+        SENTENCE = 3
+
+    target: Target
+    dataset: DataframeTableModel
+    sample: SampleStringStackModel
+    pipeline: Pipeline
+    page_filter: Pipeline
+    reader: Reader
 
 
 class SampleStringStackModel(qtc.QStringListModel):
@@ -81,11 +105,11 @@ class DataframeTableModel(qtc.QAbstractTableModel):
     def columnCount(self, parent=None):
         return self._df.shape[1]
 
-    def data(self, index, role=qtc.Qt.DisplayRole):
+    def data(self, index, role=qtc.Qt.ItemDataRole.DisplayRole):
         if index.isValid():
-            if role == qtc.Qt.DisplayRole:
+            if role == qtc.Qt.ItemDataRole.DisplayRole:
                 return str(self._df.iloc[index.row(), index.column()])
-            elif role == qtc.Qt.ForegroundRole:
+            elif role == qtc.Qt.ItemDataRole.ForegroundRole:
                 if index.column() == self._df.columns.get_loc("proba"):
                     brush = qtg.QBrush()
                     brush.setColor(
@@ -102,13 +126,16 @@ class DataframeTableModel(qtc.QAbstractTableModel):
         return None
 
     def headerData(self, col, orientation, role):
-        if orientation == qtc.Qt.Horizontal and role == qtc.Qt.DisplayRole:
+        if (
+            orientation == qtc.Qt.Orientation.Horizontal
+            and role == qtc.Qt.ItemDataRole.DisplayRole
+        ):
             if len(self._df.columns) > col:
                 return self._df.columns[col]
         return None
 
-    def setData(self, index, value, role=qtc.Qt.EditRole) -> bool:
-        if role == qtc.Qt.EditRole:
+    def setData(self, index, value, role=qtc.Qt.ItemDataRole.EditRole) -> bool:
+        if role == qtc.Qt.ItemDataRole.EditRole:
             if not index.isValid():
                 return False
             self._df.iloc[index.row(), index.column()] = value
@@ -119,8 +146,6 @@ class DataframeTableModel(qtc.QAbstractTableModel):
 
     def flags(self, index):
         if index.column() == self._df.columns.get_loc("class"):
-            return qtc.Qt.ItemIsEditable | super().flags(index)
+            return qtc.Qt.ItemFlag.ItemIsEditable | super().flags(index)
         else:
             return super().flags(index)
-
-

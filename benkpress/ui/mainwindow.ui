@@ -100,21 +100,17 @@
      <x>0</x>
      <y>0</y>
      <width>825</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_file">
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="action_new_dataset"/>
+    <addaction name="action_new_session"/>
     <addaction name="separator"/>
     <addaction name="action_save_dataset"/>
     <addaction name="action_save_dataset_as"/>
-    <addaction name="separator"/>
-    <addaction name="action_import_sample"/>
-    <addaction name="separator"/>
-    <addaction name="actionExport_dataset"/>
     <addaction name="separator"/>
     <addaction name="action_exit"/>
    </widget>
@@ -133,9 +129,9 @@
     <string>About</string>
    </property>
   </action>
-  <action name="action_new_dataset">
+  <action name="action_new_session">
    <property name="text">
-    <string>New dataset</string>
+    <string>New session</string>
    </property>
   </action>
   <action name="action_save_dataset">

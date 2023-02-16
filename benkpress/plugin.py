@@ -1,7 +1,5 @@
-#! /usr/bin/env python3
-
 # benkpress
-# Copyright (C) 2022 Dennis Hedback
+# Copyright (C) 2022-2023 Dennis Hedback
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,19 +17,46 @@
 from importlib.metadata import EntryPoint, entry_points
 from typing import Any, Dict, List
 
-from benkpress_plugins.preprocessors import Preprocessor
+from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.dummy import DummyClassifier
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.pipeline import Pipeline
+
+
+class PassthroughPageClassifier(BaseEstimator, ClassifierMixin):
+    def __init__(self):
+        super().__init__()
+
+    def fit(self, X, y):
+        return self
+
+    def predict(self, X):
+        return [1] * len(X)
+
+    def predict_proba(self, X):
+        return [1.0] * len(X)
+
+
+def DummyPipeline():
+    """Returns a dummy classifier pipeline to use as a baseline."""
+    return Pipeline(
+        [
+            ("Vectorizer", CountVectorizer()),
+            ("Classifier", DummyClassifier()),
+        ]
+    )
 
 
 class PluginLoader:
-    _preprocessor_entry_points: Dict[str, EntryPoint]
+    _page_filter_entry_points: Dict[str, EntryPoint]
     _pipeline_entry_points: Dict[str, EntryPoint]
 
     def __init__(self):
         """Initalize PluginLoader"""
-        PREPROCESSORS_KEY = "benkpress_plugins.preprocessors"
+        PAGE_FILTERS_KEY = "benkpress_plugins.page_filters"
         PIPELINES_KEY = "benkpress_plugins.pipelines"
-        self._preprocessor_entry_points = dict()
-        self._populate_dict(PREPROCESSORS_KEY, self._preprocessor_entry_points)
+        self._page_filter_entry_points = dict()
+        self._populate_dict(PAGE_FILTERS_KEY, self._page_filter_entry_points)
         self._pipeline_entry_points = dict()
         self._populate_dict(PIPELINES_KEY, self._pipeline_entry_points)
 
@@ -40,15 +65,15 @@ class PluginLoader:
             for entry_point in entry_points()[key]:
                 dict_[entry_point.name] = entry_point
 
-    def get_available_preprocessors(self) -> List[str]:
+    def get_available_page_filters(self) -> List[str]:
         """
-        Get the names of all installed preprocessors.
+        Get the names of all installed page_filters.
 
         Returns
         -------
-        List containing the names of all available preprocessor plugins.
+        List containing the names of all available page_filter plugins.
         """
-        return [name for name in self._preprocessor_entry_points]
+        return [name for name in self._page_filter_entry_points]
 
     def get_available_pipelines(self) -> List[str]:
         """
@@ -60,21 +85,21 @@ class PluginLoader:
         """
         return [name for name in self._pipeline_entry_points]
 
-    def load_preprocessor(self, name: str) -> Preprocessor:
+    def load_page_filter(self, name: str) -> Pipeline:
         """
-        Get preprocessor entry point.
+        Get page_filter entry point.
 
         Parameters
         ----------
-        name : The name of the installed preprocessor.
+        name : The name of the installed page_filter.
 
         Returns
         -------
-        EntryPoint used to load the preprocessor plugin.
+        EntryPoint used to load the page_filter plugin.
         """
-        return self._preprocessor_entry_points[name].load()()
+        return self._page_filter_entry_points[name].load()()
 
-    def load_pipeline(self, name: str) -> Any:
+    def load_pipeline(self, name: str) -> Pipeline:
         """
         Get pipeline entry point.
 
