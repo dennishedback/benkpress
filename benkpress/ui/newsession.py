@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_NewSessionDialog(object):
     def setupUi(self, NewSessionDialog):
         NewSessionDialog.setObjectName("NewSessionDialog")
-        NewSessionDialog.resize(464, 440)
+        NewSessionDialog.resize(464, 617)
         self.verticalLayout = QtWidgets.QVBoxLayout(NewSessionDialog)
         self.verticalLayout.setObjectName("verticalLayout")
         self.general_settings = QtWidgets.QGroupBox(parent=NewSessionDialog)
@@ -140,5 +140,4 @@ class Ui_NewSessionDialog(object):
         self.label_9.setText(_translate("NewSessionDialog", "Poppler path"))
         self.label_10.setText(_translate("NewSessionDialog", "Tesseract path"))
         self.tesseract_language.setText(_translate("NewSessionDialog", "eng"))
-from benkpress.widget.combobox import PageFilterBox, PipelineBox, ReaderBox, SpacyModelsBox
-from benkpress.widget.pathedit import PathEdit
+from benkpress.widget import PageFilterBox, PathEdit, PipelineBox, ReaderBox, SpacyModelsBox

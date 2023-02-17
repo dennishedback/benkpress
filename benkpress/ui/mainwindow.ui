@@ -164,7 +164,7 @@
   <customwidget>
    <class>PDFView</class>
    <extends>QWidget</extends>
-   <header>benkpress.widget.pdfview</header>
+   <header>benkpress.widget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

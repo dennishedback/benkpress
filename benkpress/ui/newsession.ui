@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>464</width>
-    <height>440</height>
+    <height>617</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -215,27 +215,27 @@
   <customwidget>
    <class>PathEdit</class>
    <extends>QLineEdit</extends>
-   <header>benkpress.widget.pathedit</header>
+   <header>benkpress.widget</header>
   </customwidget>
   <customwidget>
    <class>PageFilterBox</class>
    <extends>QComboBox</extends>
-   <header>benkpress.widget.combobox</header>
+   <header>benkpress.widget</header>
   </customwidget>
   <customwidget>
    <class>PipelineBox</class>
    <extends>QComboBox</extends>
-   <header>benkpress.widget.combobox</header>
+   <header>benkpress.widget</header>
   </customwidget>
   <customwidget>
    <class>SpacyModelsBox</class>
    <extends>QComboBox</extends>
-   <header>benkpress.widget.combobox</header>
+   <header>benkpress.widget</header>
   </customwidget>
   <customwidget>
    <class>ReaderBox</class>
    <extends>QComboBox</extends>
-   <header>benkpress.widget.combobox</header>
+   <header>benkpress.widget</header>
   </customwidget>
  </customwidgets>
  <resources/>

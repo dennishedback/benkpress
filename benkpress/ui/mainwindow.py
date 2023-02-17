@@ -128,4 +128,4 @@ class Ui_MainWindow(object):
         self.action_import_sample.setText(_translate("MainWindow", "Import sample"))
         self.action_exit.setText(_translate("MainWindow", "Exit"))
         self.actionExport_dataset.setText(_translate("MainWindow", "Export dataset"))
-from benkpress.widget.pdfview import PDFView
+from benkpress.widget import PDFView
