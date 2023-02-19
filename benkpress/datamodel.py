@@ -16,8 +16,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import random
+from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
@@ -25,26 +27,9 @@ from PyQt6 import QtCore as qtc
 from PyQt6 import QtGui as qtg
 from sklearn.pipeline import Pipeline
 
-from benkpress.api.reader import Reader
-
-
-@dataclass
-class Session:
-    """Describes a tagging session of the application."""
-
-    class Target(Enum):
-        """Describes the target of a tagging session."""
-
-        FILE = 1
-        PAGE = 2
-        SENTENCE = 3
-
-    target: Target
-    dataset: DataframeTableModel
-    sample: SampleStringStackModel
-    pipeline: Pipeline
-    page_filter: Pipeline
-    reader: Reader
+from benkpress.api.reader import PyPDFReader, Reader, TesseractReader
+from benkpress.api.tokenizer import Sentencizer
+from benkpress.plugin import PluginLoader
 
 
 class SampleStringStackModel(qtc.QStringListModel):
@@ -59,6 +44,12 @@ class SampleStringStackModel(qtc.QStringListModel):
 
 
 class DataframeTableModel(qtc.QAbstractTableModel):
+    """A table model for displaying a pandas dataframe."""
+
+    # TODO: Consider deriving from QSortFilterProxyModel instead.
+    # TODO: Establish consistent naming convention for table fields
+    # across the application. For example, "page" vs "document".
+
     def __init__(self):
         super().__init__()
         self._df = pd.DataFrame()
@@ -149,3 +140,118 @@ class DataframeTableModel(qtc.QAbstractTableModel):
             return qtc.Qt.ItemFlag.ItemIsEditable | super().flags(index)
         else:
             return super().flags(index)
+
+
+@dataclass
+class Session:
+    """Describes a tagging session of the application."""
+
+    class Target(Enum):
+        """Describes the target of a tagging session."""
+
+        FILE = 1
+        PAGE = 2
+        SENTENCE = 3
+
+    target: Target
+    pipeline: Pipeline
+    page_filter: Pipeline
+    reader: Reader
+    sentencizer: Sentencizer
+    dataset: DataframeTableModel = field(default_factory=lambda: DataframeTableModel())
+    sample: SampleStringStackModel = field(
+        default_factory=lambda: SampleStringStackModel()
+    )
+
+    class Builder:
+        """Builds a session object from raw input."""
+
+        # TODO: This class might have too much responsibility. On the other hand
+        # there is a trade-off between knowing how to create all these objects
+        # and the amount of levels of indirection. Think about that.
+
+        def __init__(self):
+            self._plugin_loader = PluginLoader()
+            self._sample = []
+            self._target = None
+            self._pipeline = None
+            self._page_filter = None
+            self._reader = None
+            self._sentencizer = None
+
+        def sample(self, sample_folder_name: str) -> Session.Builder:
+            """Create a sample instance based on the given sample folder."""
+            sample_folder = Path(sample_folder_name)
+            self._sample_file_paths = [
+                str(f) for f in sample_folder.iterdir() if f.is_file()
+            ]
+            random.shuffle(self._sample_file_paths)
+            return self
+
+        def target(self, target_name: str) -> Session.Builder:
+            """Create a target instance based on the given target name."""
+            self._target = Session.Target[target_name.upper()]
+            print(self._target)
+            return self
+
+        def pipeline(self, pipeline_name: str) -> Session.Builder:
+            """Create a pipeline instance based on the given pipeline name."""
+            self._pipeline = self._plugin_loader.load_pipeline(pipeline_name)
+            print(self._pipeline)
+            return self
+
+        def page_filter(self, page_filter_name: str) -> Session.Builder:
+            """Create a page filter instance based on the given page filter name."""
+            self._page_filter = self._plugin_loader.load_page_filter(page_filter_name)
+            print(self._page_filter)
+            return self
+
+        def reader(
+            self,
+            reader_name: str,
+            dpi: int,
+            language: str,
+            poppler_path: str,
+            tesseract_path: str,
+        ) -> Session.Builder:
+            """Create a reader instance based on the given reader name and raw parameters."""
+            # TODO: Decouple this method from knowledge about reader module internals.
+            # In particular, strings like "Tesseract" and "PyPDF" should be removed.
+            # Perhaps the reader module should provide a list of available readers,
+            # maybe as plugins, like the filters and pipelines. In any case, this
+            # method should not be aware of the internals of the reader module.
+            if reader_name == "Tesseract":
+                self._reader = TesseractReader(
+                    tesseract_path=tesseract_path,
+                    tesseract_language=language,
+                    poppler_path=poppler_path,
+                    dpi=dpi,
+                )
+            elif reader_name == "PyPDF":
+                self._reader = PyPDFReader()
+            else:
+                raise ValueError(f"Unknown reader name: {reader_name}")
+            print(self._reader)
+            return self
+
+        def sentencizer(self, model_name: str) -> Session.Builder:
+            """Create a sentencizer instance based on the given model name."""
+            self._sentencizer = Sentencizer(model_name)
+            print(self._sentencizer)
+            return self
+
+        def build(self) -> Session:
+            session = Session(
+                target=self._target,
+                pipeline=self._pipeline,
+                page_filter=self._page_filter,
+                reader=self._reader,
+                sentencizer=self._sentencizer,
+            )
+            session.sample.setStringList(self._sample_file_paths)
+            return session
+
+    @classmethod
+    def create_from_raw_input(cls):
+        """Create a session object from raw input."""
+        ...

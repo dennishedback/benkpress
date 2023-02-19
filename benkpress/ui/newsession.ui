@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="general_settings">
+    <widget class="QGroupBox" name="general_settings_group">
      <property name="title">
       <string>General Settings</string>
      </property>
@@ -30,7 +30,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="PathEdit" name="sample_folder">
+         <widget class="PathEdit" name="sample_folder_path_line_edit">
           <property name="folder" stdset="0">
            <bool>true</bool>
           </property>
@@ -44,7 +44,7 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="PageFilterBox" name="page_filter"/>
+         <widget class="PageFilterBox" name="page_filter_combo_box"/>
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_3">
@@ -54,44 +54,7 @@
          </widget>
         </item>
         <item row="2" column="1">
-         <widget class="PipelineBox" name="pipeline"/>
-        </item>
-        <item row="3" column="1">
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <item>
-           <widget class="QRadioButton" name="file_target">
-            <property name="text">
-             <string>File</string>
-            </property>
-            <attribute name="buttonGroup">
-             <string notr="true">target</string>
-            </attribute>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="page_target">
-            <property name="text">
-             <string>Page</string>
-            </property>
-            <attribute name="buttonGroup">
-             <string notr="true">target</string>
-            </attribute>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="sentence_target">
-            <property name="text">
-             <string>Sentence</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-            <attribute name="buttonGroup">
-             <string notr="true">target</string>
-            </attribute>
-           </widget>
-          </item>
-         </layout>
+         <widget class="PipelineBox" name="pipeline_combo_box"/>
         </item>
         <item row="3" column="0">
          <widget class="QLabel" name="label_6">
@@ -100,8 +63,45 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
-         <widget class="SpacyModelsBox" name="spacy_model"/>
+        <item row="3" column="1">
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QRadioButton" name="file_target_radio_button">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>File</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">target_button_group</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="page_target_radio_button">
+            <property name="text">
+             <string>Page</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">target_button_group</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="sentence_target_radio_button">
+            <property name="text">
+             <string>Sentence</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">target_button_group</string>
+            </attribute>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item row="4" column="0">
          <widget class="QLabel" name="label_7">
@@ -110,13 +110,16 @@
           </property>
          </widget>
         </item>
+        <item row="4" column="1">
+         <widget class="SpacyModelsBox" name="spacy_model_combo_box"/>
+        </item>
        </layout>
       </item>
      </layout>
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="pdf_reader_settings">
+    <widget class="QGroupBox" name="reader_settings_group">
      <property name="title">
       <string>PDF Reader Settings</string>
      </property>
@@ -138,7 +141,7 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QSpinBox" name="poppler_dpi">
+         <widget class="QSpinBox" name="poppler_dpi_spin_box">
           <property name="minimum">
            <number>72</number>
           </property>
@@ -154,17 +157,17 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="ReaderBox" name="reader"/>
+         <widget class="ReaderBox" name="reader_combo_box"/>
         </item>
         <item row="3" column="1">
-         <widget class="PathEdit" name="poppler_path">
+         <widget class="PathEdit" name="poppler_path_line_edit">
           <property name="folder" stdset="0">
            <bool>true</bool>
           </property>
          </widget>
         </item>
         <item row="4" column="1">
-         <widget class="PathEdit" name="tesseract_path"/>
+         <widget class="PathEdit" name="tesseract_path_line_edit"/>
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_8">
@@ -188,7 +191,7 @@
          </widget>
         </item>
         <item row="2" column="1">
-         <widget class="QLineEdit" name="tesseract_language">
+         <widget class="QLineEdit" name="tesseract_language_line_edit">
           <property name="text">
            <string>eng</string>
           </property>
@@ -200,7 +203,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="button_box">
+    <widget class="QDialogButtonBox" name="dialog_button_box">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -241,6 +244,6 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="target"/>
+  <buttongroup name="target_button_group"/>
  </buttongroups>
 </ui>

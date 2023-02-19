@@ -48,6 +48,7 @@ def DummyPipeline():
 
 
 class PluginLoader:
+    # TODO: Refactor into functions
     _page_filter_entry_points: Dict[str, EntryPoint]
     _pipeline_entry_points: Dict[str, EntryPoint]
 

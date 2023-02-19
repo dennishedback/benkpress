@@ -31,6 +31,9 @@ from spacy.util import get_installed_models
 
 from benkpress.plugin import PluginLoader
 
+# TODO: Refactor these into more verbose names. For
+# example, PageFilterBox -> PageFilterComboBox and PathEdit -> PathLineEdit.
+
 
 class PageFilterBox(qtw.QComboBox):
     """A combobox for selecting a page filter plugin."""

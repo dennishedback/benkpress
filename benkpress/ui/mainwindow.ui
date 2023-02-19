@@ -20,7 +20,7 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="PDFView" name="web_engine_view" native="true"/>
+      <widget class="PDFView" name="pdf_view" native="true"/>
       <widget class="QWidget" name="verticalLayoutWidget">
        <layout class="QVBoxLayout" name="sidebar_layout">
         <item>
@@ -34,7 +34,7 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="QTableView" name="dataset"/>
+             <widget class="QTableView" name="dataset_table_view"/>
             </item>
            </layout>
           </widget>
@@ -44,7 +44,7 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
-             <widget class="QListView" name="sample"/>
+             <widget class="QListView" name="sample_list_view"/>
             </item>
            </layout>
           </widget>
@@ -54,12 +54,12 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_4">
             <item>
-             <widget class="QPlainTextEdit" name="validation_results"/>
+             <widget class="QPlainTextEdit" name="validation_results_view"/>
             </item>
             <item>
              <layout class="QFormLayout" name="validation_settings_layout">
               <item row="0" column="1">
-               <widget class="QSpinBox" name="kfold_splits"/>
+               <widget class="QSpinBox" name="kfold_splits_spin_box"/>
               </item>
               <item row="0" column="0">
                <widget class="QLabel" name="kfold_label">
@@ -71,7 +71,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QPushButton" name="refit_pipeline">
+             <widget class="QPushButton" name="refit_pipeline_button">
               <property name="text">
                <string>Refit pipeline</string>
               </property>
@@ -82,7 +82,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="next_document">
+         <widget class="QPushButton" name="next_document_button">
           <property name="text">
            <string>&gt;&gt;&gt; Next document &gt;&gt;&gt;</string>
           </property>
@@ -103,43 +103,43 @@
      <height>21</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu_file">
+   <widget class="QMenu" name="file_menu">
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="action_new_session"/>
+    <addaction name="new_session_action"/>
     <addaction name="separator"/>
-    <addaction name="action_save_dataset"/>
-    <addaction name="action_save_dataset_as"/>
+    <addaction name="save_dataset_action"/>
+    <addaction name="save_dataset_as_action"/>
     <addaction name="separator"/>
-    <addaction name="action_exit"/>
+    <addaction name="exit_action"/>
    </widget>
-   <widget class="QMenu" name="menu_help">
+   <widget class="QMenu" name="help_menu">
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="action_about"/>
+    <addaction name="about_menu"/>
    </widget>
-   <addaction name="menu_file"/>
-   <addaction name="menu_help"/>
+   <addaction name="file_menu"/>
+   <addaction name="help_menu"/>
   </widget>
   <widget class="QStatusBar" name="status_bar"/>
-  <action name="action_about">
+  <action name="about_menu">
    <property name="text">
     <string>About</string>
    </property>
   </action>
-  <action name="action_new_session">
+  <action name="new_session_action">
    <property name="text">
     <string>New session</string>
    </property>
   </action>
-  <action name="action_save_dataset">
+  <action name="save_dataset_action">
    <property name="text">
     <string>Save dataset</string>
    </property>
   </action>
-  <action name="action_save_dataset_as">
+  <action name="save_dataset_as_action">
    <property name="text">
     <string>Save dataset as</string>
    </property>
@@ -149,7 +149,7 @@
     <string>Import sample</string>
    </property>
   </action>
-  <action name="action_exit">
+  <action name="exit_action">
    <property name="text">
     <string>Exit</string>
    </property>
