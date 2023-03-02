@@ -34,6 +34,7 @@ from sklearn.model_selection import KFold
 
 from benkpress.datamodel import DataframeTableModel, SampleStringStackModel, Session
 from benkpress.plugin import PluginLoader
+from benkpress.resources import QUICK_START_GUIDE_PATH
 from benkpress.ui.mainwindow import Ui_MainWindow
 from benkpress.ui.newsession import Ui_NewSessionDialog
 
@@ -57,6 +58,7 @@ class MainWindow(qtw.QMainWindow):
         """Initialize the user interface."""
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.ui.pdf_view.load(str(QUICK_START_GUIDE_PATH))
 
     def _init_connections(self):
         """Initialize connections between signals and slots."""
