@@ -61,6 +61,9 @@ class TesseractReader:
             for img in images
         ]
 
+    def __repr__(self):
+        return f"benkpress.api.reader.TesseractReader(tesseract_language={self.tesseract_language}, dpi={self.dpi})"
+
 
 class PyPDFReader:
     """A reader that uses PyPDF2 to read PDF files. Fast but not very precise. Mostly used for testing."""
@@ -72,3 +75,6 @@ class PyPDFReader:
                 " ".join(pdf.getPage(i).extractText().strip().split())
                 for i in range(pdf.getNumPages())
             ]
+
+    def __repr__(self):
+        return "benkpress.api.reader.PyPDFReader()"

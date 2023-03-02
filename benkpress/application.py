@@ -271,6 +271,7 @@ class NewSessionDialog(qtw.QDialog):
         try:
             session = (
                 Session.Builder()
+                .log_stream()
                 .sample(self.ui.sample_folder_path_line_edit.text())
                 .page_filter(self.ui.page_filter_combo_box.currentText())
                 .pipeline(self.ui.pipeline_combo_box.currentText())
@@ -410,6 +411,8 @@ class Application(qtw.QApplication):
         )
         if filename:
             session.dataset.save(filename)
+            with open(f"{filename}.txt", "w") as f:
+                f.write(session.log_stream.getvalue())
 
 
 def main():

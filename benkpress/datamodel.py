@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import io
 import logging
 import random
 from dataclasses import asdict, dataclass, field
@@ -202,6 +203,7 @@ class Session:
         PAGE = 2
         SENTENCE = 3
 
+    log_stream: io.StringIO
     target: Target
     pipeline: Pipeline
     page_filter: Pipeline
@@ -221,12 +223,22 @@ class Session:
 
         def __init__(self):
             self._plugin_loader = PluginLoader()
+            self._log_stream = io.StringIO()
             self._sample = []
             self._target = None
             self._pipeline = None
             self._page_filter = None
             self._reader = None
             self._sentencizer = None
+
+        def log_stream(self, format: str = logging.BASIC_FORMAT) -> Session.Builder:
+            # TODO: Consider whether to activate the log stream here or in the Session.
+            log_formatter = logging.Formatter(format)
+            stream_handler = logging.StreamHandler(self._log_stream)
+            stream_handler.setFormatter(log_formatter)
+            stream_handler.setLevel(logging.INFO)
+            logging.getLogger().addHandler(stream_handler)
+            return self
 
         def sample(self, sample_folder_name: str) -> Session.Builder:
             """Create a sample instance based on the given sample folder."""
@@ -235,6 +247,7 @@ class Session:
                 str(f) for f in sample_folder.iterdir() if f.is_file()
             ]
             random.shuffle(self._sample_file_paths)
+            logger.info(sample_folder)
             return self
 
         def target(self, target_name: str) -> Session.Builder:
@@ -291,6 +304,7 @@ class Session:
 
         def build(self) -> Session:
             session = Session(
+                log_stream=self._log_stream,
                 target=self._target,
                 pipeline=self._pipeline,
                 page_filter=self._page_filter,
