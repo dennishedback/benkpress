@@ -1,7 +1,5 @@
-#! /usr/bin/env python3
-
 # benkpress
-# Copyright (C) 2022 Dennis Hedback
+# Copyright (C) 2022-2023 Dennis Hedback
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,11 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
-import os.path
-import sys
+"""benkpress.api
 
-from pathlib import Path
-from appdirs import user_data_dir
-
-pdfjs = Path(user_data_dir("benkpress", "dennishedback")) / "pdfjs" / "web" / "viewer.html"
+This package exposes functionality intended to be used both internally,
+and by dependent programs for reproducibility purposes.
+"""

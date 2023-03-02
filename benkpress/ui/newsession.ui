@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>NewSessionDialog</class>
+ <widget class="QDialog" name="NewSessionDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>411</width>
+    <height>454</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>New session</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="general_settings_group">
+     <property name="title">
+      <string>General Settings</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <layout class="QFormLayout" name="formLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Sample folder</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="PathEdit" name="sample_folder_path_line_edit">
+          <property name="folder" stdset="0">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Page filter</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="PageFilterBox" name="page_filter_combo_box"/>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Pipeline</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="PipelineBox" name="pipeline_combo_box"/>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Target</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QRadioButton" name="file_target_radio_button">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>File</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">target_button_group</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="page_target_radio_button">
+            <property name="text">
+             <string>Page</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">target_button_group</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="sentence_target_radio_button">
+            <property name="text">
+             <string>Sentence</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">target_button_group</string>
+            </attribute>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Spacy model</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="SpacyModelsBox" name="spacy_model_combo_box"/>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="reader_settings_group">
+     <property name="title">
+      <string>PDF Reader Settings</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <layout class="QFormLayout" name="formLayout_2">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Reader</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>DPI</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSpinBox" name="poppler_dpi_spin_box">
+          <property name="minimum">
+           <number>72</number>
+          </property>
+          <property name="maximum">
+           <number>300</number>
+          </property>
+          <property name="singleStep">
+           <number>10</number>
+          </property>
+          <property name="value">
+           <number>120</number>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="ReaderBox" name="reader_combo_box"/>
+        </item>
+        <item row="3" column="1">
+         <widget class="PathEdit" name="poppler_path_line_edit">
+          <property name="folder" stdset="0">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="PathEdit" name="tesseract_path_line_edit"/>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Language</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_9">
+          <property name="text">
+           <string>Poppler path</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>Tesseract path</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLineEdit" name="tesseract_language_line_edit">
+          <property name="text">
+           <string>eng</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="dialog_button_box">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PathEdit</class>
+   <extends>QLineEdit</extends>
+   <header>benkpress.widget</header>
+  </customwidget>
+  <customwidget>
+   <class>PageFilterBox</class>
+   <extends>QComboBox</extends>
+   <header>benkpress.widget</header>
+  </customwidget>
+  <customwidget>
+   <class>PipelineBox</class>
+   <extends>QComboBox</extends>
+   <header>benkpress.widget</header>
+  </customwidget>
+  <customwidget>
+   <class>SpacyModelsBox</class>
+   <extends>QComboBox</extends>
+   <header>benkpress.widget</header>
+  </customwidget>
+  <customwidget>
+   <class>ReaderBox</class>
+   <extends>QComboBox</extends>
+   <header>benkpress.widget</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="target_button_group"/>
+ </buttongroups>
+</ui>
