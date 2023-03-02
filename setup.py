@@ -33,8 +33,12 @@ setup(
             "benkpress-merge-datasets=benkpress.scripts.merge_datasets:main",
         ],
         "benkpress_plugins.page_filters": [
-            "Passthrough=benkpress.plugin:PassthroughPageClassifier"
+            "Passthrough=benkpress.plugin:PassthroughPageClassifier",
         ],
-        "benkpress_plugins.pipelines": ["Dummy=benkpress.plugin:DummyPipeline"],
+        "benkpress_plugins.pipelines": [ 
+            "Dummy=benkpress.plugin:DummyPipeline",
+            "TfidfXgboost=benkpress.plugin:tfidf_xgb_pipeline",
+            "TfidfSvSmoteXgboost=benkpress.plugin:tfidf_sv_smote_xgb_pipeline",
+        ],
     },
 )

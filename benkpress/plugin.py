@@ -15,12 +15,17 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from importlib.metadata import EntryPoint, entry_points
-from typing import Any, Dict, List
+from typing import Dict, List
 
+from imblearn.over_sampling import SMOTE
+from imblearn.pipeline import Pipeline as ImbalancedPipeline
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.dummy import DummyClassifier
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.pipeline import Pipeline
+from xgboost import XGBClassifier
+
+from benkpress.api.tokenizer import Lemmatizer
 
 
 class PassthroughPageClassifier(BaseEstimator, ClassifierMixin):
@@ -43,6 +48,54 @@ def DummyPipeline():
         [
             ("Vectorizer", CountVectorizer()),
             ("Classifier", DummyClassifier()),
+        ]
+    )
+
+
+def tfidf_transformer():
+    return [
+        (
+            "Vectorizer",
+            TfidfVectorizer(use_idf=True, max_features=None, stop_words=None),
+        )
+    ]
+
+
+# _tokenizer_en = Lemmatizer("en_core_web_lg")
+_tokenizer_sv = Lemmatizer("sv_core_news_lg")
+
+# TODO: Should supply tokenizer as parameter and it should work through load_entry_point
+
+
+def tfidf_sv_smote_transformers():
+    return [
+        (
+            "Vectorizer",
+            TfidfVectorizer(
+                use_idf=True,
+                max_features=None,
+                stop_words=None,
+                tokenizer=_tokenizer_sv.lemmatize,
+            ),
+        ),
+        ("Oversampler", SMOTE(sampling_strategy=0.5)),
+    ]
+
+
+def tfidf_xgb_pipeline():
+    return Pipeline(
+        tfidf_transformer()
+        + [
+            ("Classifer", XGBClassifier(n_estimators=1000)),
+        ]
+    )
+
+
+def tfidf_sv_smote_xgb_pipeline():
+    return ImbalancedPipeline(
+        tfidf_sv_smote_transformers()
+        + [
+            ("Classifer", XGBClassifier(n_estimators=1000)),
         ]
     )
 

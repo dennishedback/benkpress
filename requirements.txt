@@ -9,3 +9,5 @@ scikit-learn
 docopt
 appdirs
 spacy
+imbalanced-learn
+xgboost

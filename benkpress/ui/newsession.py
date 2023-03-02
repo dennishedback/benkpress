@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_NewSessionDialog(object):
     def setupUi(self, NewSessionDialog):
         NewSessionDialog.setObjectName("NewSessionDialog")
-        NewSessionDialog.resize(464, 617)
+        NewSessionDialog.resize(411, 454)
         self.verticalLayout = QtWidgets.QVBoxLayout(NewSessionDialog)
         self.verticalLayout.setObjectName("verticalLayout")
         self.general_settings_group = QtWidgets.QGroupBox(parent=NewSessionDialog)
@@ -46,6 +46,7 @@ class Ui_NewSessionDialog(object):
         self.verticalLayout_4 = QtWidgets.QVBoxLayout()
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.file_target_radio_button = QtWidgets.QRadioButton(parent=self.general_settings_group)
+        self.file_target_radio_button.setEnabled(True)
         self.file_target_radio_button.setObjectName("file_target_radio_button")
         self.target_button_group = QtWidgets.QButtonGroup(NewSessionDialog)
         self.target_button_group.setObjectName("target_button_group")

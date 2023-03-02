@@ -32,6 +32,10 @@ class Lemmatizer:
         """Lemmatize a string."""
         return [x.lemma_ for x in self._nlp(text)]
 
+    def __repr__(self):
+        """Return an unambiguous string representation of the lemmatizer."""
+        return f"benkpress.api.tokenizer.Lemmatizer({self._spacy_model})"
+
 
 class Sentencizer:
     """A sentence splitting tokenizer for a specific language model. Used
@@ -45,3 +49,7 @@ class Sentencizer:
     def sentencize(self, text: str) -> list[str]:
         """Split a string into sentences."""
         return [x.text for x in self._nlp(text).sents]
+
+    def __repr__(self):
+        """Return an unambiguous string representation of the sentencizer."""
+        return f"benkpress.api.tokenizer.Sentencizer({self._spacy_model})"

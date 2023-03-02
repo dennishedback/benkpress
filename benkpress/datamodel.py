@@ -16,8 +16,9 @@
 
 from __future__ import annotations
 
+import logging
 import random
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -30,6 +31,8 @@ from sklearn.pipeline import Pipeline
 from benkpress.api.reader import PyPDFReader, Reader, TesseractReader
 from benkpress.api.tokenizer import Sentencizer
 from benkpress.plugin import PluginLoader
+
+logger = logging.getLogger(__name__)
 
 
 class SampleStringStackModel(qtc.QStringListModel):
@@ -46,44 +49,66 @@ class SampleStringStackModel(qtc.QStringListModel):
 class DataframeTableModel(qtc.QAbstractTableModel):
     """A table model for displaying a pandas dataframe."""
 
+    # TODO: Naming is imprecise. This is not general dataframe table
+    # model, but a specialized one.
     # TODO: Consider deriving from QSortFilterProxyModel instead.
     # TODO: Establish consistent naming convention for table fields
     # across the application. For example, "page" vs "document".
+    # TODO: Consider whether to use index column.
+
+    class SaveStatus(Enum):
+        SAVED = 0
+        UNSAVED = 1
 
     def __init__(self):
         super().__init__()
+        # Start on state "saved". It makes no sense to have an unsaved empty table
+        # or an unsaved just loaded table. The table becomes unsaved only when
+        # it is changed.
+        self._save_status: DataframeTableModel.SaveStatus = self.SaveStatus.SAVED
         self._df = pd.DataFrame()
-        self._last_saved_rowcount = 0
+        # TODO: Consider whether these connections are enough to reflect all possible
+        # changes of save state.
+        self.layoutChanged.connect(self._set_unsaved)
+        self.dataChanged.connect(self._set_unsaved)
+
+    @qtc.pyqtSlot()
+    def _set_unsaved(self):
+        logger.debug("Set status unsaved.")
+        self._save_status = self.SaveStatus.UNSAVED
+
+    def _set_saved(self):
+        logger.debug("Set status saved.")
+        self._save_status = self.SaveStatus.SAVED
 
     @classmethod
     def load(cls, filepath_or_buffer: Any) -> DataframeTableModel:
         model = cls()
         model._df = pd.read_csv(filepath_or_buffer, index_col=False)
-        model._last_saved_rowcount = model.rowCount()
         return model
+
+    def texts(self) -> pd.Series:
+        return self._df["text"]
+
+    def classes(self) -> pd.Series:
+        return self._df["class"]
 
     def dataframe(self) -> pd.DataFrame:
         return self._df
 
     def is_saved(self) -> bool:
-        # FIXME: Doesn't consider the contents of each row, only the number of rows.
-        return self._last_saved_rowcount == self.rowCount()
+        return self._save_status == self.SaveStatus.SAVED
 
     def save(self, filepath_or_buffer: Any) -> None:
+        # TODO: Consider whether to save the page and proba columns.
         self._df["class"] = pd.to_numeric(self._df["class"])
         self._df.to_csv(filepath_or_buffer)
-        self._last_saved_rowcount = self.rowCount()
+        self._set_saved()
 
-    def appendRow(self, filename: str, page: int, text: str, proba: float, class_: int):
+    def appendRow(self, row: DataframeTableModel.RowConfig):
         self.beginInsertRows(qtc.QModelIndex(), self.rowCount(), self.rowCount())
         new_row = pd.DataFrame(
-            {
-                "file": filename,
-                "page": page,
-                "text": text,
-                "proba": proba,
-                "class": int(class_),
-            },
+            row.dict(),
             index=[0],
         )
         self._df = pd.concat([self._df.loc[:], new_row]).reset_index(drop=True)
@@ -125,21 +150,45 @@ class DataframeTableModel(qtc.QAbstractTableModel):
                 return self._df.columns[col]
         return None
 
+    def _dtype_to_cast(self, column: int, column_dtypes: pd.Series) -> Any:
+        if column_dtypes[column] == "int64":
+            return int
+        elif column_dtypes[column] == "float64":
+            return float
+        else:
+            return str
+
     def setData(self, index, value, role=qtc.Qt.ItemDataRole.EditRole) -> bool:
         if role == qtc.Qt.ItemDataRole.EditRole:
             if not index.isValid():
                 return False
-            self._df.iloc[index.row(), index.column()] = value
-            self.dataChanged.emit(index, index, [role])
-            return True
-        else:
-            return False
+            cast_function = self._dtype_to_cast(index.column(), self._df.dtypes)
+            try:
+                self._df.iloc[index.row(), index.column()] = cast_function(value)
+                self.dataChanged.emit(index, index, [role])
+                return True
+            except ValueError:
+                return False
+        return False
 
     def flags(self, index):
         if index.column() == self._df.columns.get_loc("class"):
             return qtc.Qt.ItemFlag.ItemIsEditable | super().flags(index)
         else:
             return super().flags(index)
+
+    @dataclass
+    class RowConfig:
+        """Describes the configuration of a table row."""
+
+        file: str
+        page: int
+        text: str
+        proba: float
+        class_: int
+
+        def dict(self) -> dict:
+            return {k.strip("_"): v for k, v in asdict(self).items()}
 
 
 @dataclass
@@ -191,19 +240,19 @@ class Session:
         def target(self, target_name: str) -> Session.Builder:
             """Create a target instance based on the given target name."""
             self._target = Session.Target[target_name.upper()]
-            print(self._target)
+            logger.info(self._target)
             return self
 
         def pipeline(self, pipeline_name: str) -> Session.Builder:
             """Create a pipeline instance based on the given pipeline name."""
             self._pipeline = self._plugin_loader.load_pipeline(pipeline_name)
-            print(self._pipeline)
+            logger.info(self._pipeline)
             return self
 
         def page_filter(self, page_filter_name: str) -> Session.Builder:
             """Create a page filter instance based on the given page filter name."""
             self._page_filter = self._plugin_loader.load_page_filter(page_filter_name)
-            print(self._page_filter)
+            logger.info(self._page_filter)
             return self
 
         def reader(
@@ -231,13 +280,13 @@ class Session:
                 self._reader = PyPDFReader()
             else:
                 raise ValueError(f"Unknown reader name: {reader_name}")
-            print(self._reader)
+            logger.info(self._reader)
             return self
 
         def sentencizer(self, model_name: str) -> Session.Builder:
             """Create a sentencizer instance based on the given model name."""
             self._sentencizer = Sentencizer(model_name)
-            print(self._sentencizer)
+            logger.info(self._sentencizer)
             return self
 
         def build(self) -> Session:
