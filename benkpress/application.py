@@ -27,7 +27,8 @@ import PyQt6.QtWidgets as qtw
 from PyQt6 import QtCore as qtc
 from PyQt6 import QtWidgets as qtw
 from sklearn.exceptions import NotFittedError
-from sklearn.metrics import auc, classification_report, confusion_matrix, roc_curve
+from sklearn.metrics import (auc, classification_report, confusion_matrix,
+                             roc_curve)
 from sklearn.model_selection import KFold
 
 from benkpress.datamodel import DataframeTableModel, Session
@@ -63,10 +64,15 @@ class MainWindow(qtw.QMainWindow):
         # TODO: Should consider dataset save state before most of these actions.
         self.ui.new_session_action.triggered.connect(self.request_new_session)
         self.ui.save_dataset_action.triggered.connect(self.request_save_dataset)
-        self.ui.exit_action.triggered.connect(self.request_quit)
+        self.ui.exit_action.triggered.connect(self.close)
 
         self.ui.next_document_button.clicked.connect(self.next_document)
         self.ui.refit_pipeline_button.clicked.connect(self.refit_pipeline)
+
+    def closeEvent(self, event: qtc.QEvent):
+        logger.debug("Close event triggered.")
+        event.ignore()
+        self.quit_requested.emit()
 
     def session_needs_saving(self) -> bool:
         has_session = self.session is not None
@@ -81,10 +87,6 @@ class MainWindow(qtw.QMainWindow):
     @qtc.pyqtSlot()
     def request_save_dataset(self):
         self.save_dataset_requested.emit(self.session)
-
-    @qtc.pyqtSlot()
-    def request_quit(self):
-        self.quit_requested.emit()
 
     def set_session(self, session: Session):
         """Set the current session."""
