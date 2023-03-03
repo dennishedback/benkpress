@@ -27,8 +27,7 @@ import PyQt6.QtWidgets as qtw
 from PyQt6 import QtCore as qtc
 from PyQt6 import QtWidgets as qtw
 from sklearn.exceptions import NotFittedError
-from sklearn.metrics import (auc, classification_report, confusion_matrix,
-                             roc_curve)
+from sklearn.metrics import auc, classification_report, confusion_matrix, roc_curve
 from sklearn.model_selection import KFold
 
 from benkpress.datamodel import DataframeTableModel, Session
@@ -40,62 +39,21 @@ from benkpress.ui.newsession import Ui_NewSessionDialog
 logger = logging.getLogger(__name__)
 
 
-class MainWindow(qtw.QMainWindow):
-    """The main window of the application."""
+class DocumentProcessor(qtc.QObject):
+    """A worker object that can be used to process documents in a separate thread."""
 
-    new_session_requested = qtc.pyqtSignal()
-    save_dataset_requested = qtc.pyqtSignal(Session)
-    quit_requested = qtc.pyqtSignal()
-    session: Session = None
+    processing_started = qtc.pyqtSignal(Path)
+    next_document_processed = qtc.pyqtSignal(list, Path)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._init_ui()
-        self._init_connections()
-
-    def _init_ui(self):
-        """Initialize the user interface."""
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
-        self.ui.pdf_view.load(str(QUICK_START_GUIDE_PATH))
-
-    def _init_connections(self):
-        """Initialize connections between signals and slots."""
-        # TODO: Should consider dataset save state before most of these actions.
-        self.ui.new_session_action.triggered.connect(self.request_new_session)
-        self.ui.save_dataset_action.triggered.connect(self.request_save_dataset)
-        self.ui.exit_action.triggered.connect(self.close)
-
-        self.ui.next_document_button.clicked.connect(self.next_document)
-        self.ui.refit_pipeline_button.clicked.connect(self.refit_pipeline)
-
-    def closeEvent(self, event: qtc.QEvent):
-        logger.debug("Close event triggered.")
-        event.ignore()
-        self.quit_requested.emit()
-
-    def session_needs_saving(self) -> bool:
-        has_session = self.session is not None
-        if has_session:
-            return not self.session.dataset.is_saved()
-        return False
-
-    @qtc.pyqtSlot()
-    def request_new_session(self):
-        self.new_session_requested.emit()
-
-    @qtc.pyqtSlot()
-    def request_save_dataset(self):
-        self.save_dataset_requested.emit(self.session)
-
+    @qtc.pyqtSlot(Session)
     def set_session(self, session: Session):
-        """Set the current session."""
+        """Set the session to use for processing documents."""
+        # Treat the session as immutable!
         self.session = session
-        self.ui.sample_list_view.setModel(self.session.sample)
-        self.ui.dataset_table_view.setModel(self.session.dataset)
 
-    @qtc.pyqtSlot(bool)
-    def next_document(self, _):
+    @qtc.pyqtSlot()
+    def process_next_document(self):
+        """Run the task in a separate thread."""
         if (
             not self.session.sample.rowCount()
         ):  # TODO: The name of the method called here should be more informative.
@@ -103,6 +61,8 @@ class MainWindow(qtw.QMainWindow):
 
         # Step 1: Read
         documentpath = Path(self.session.sample.pop())
+        logger.debug(f"Processing next document: {documentpath}")
+        self.processing_started.emit(documentpath)
         read_pages = self.session.reader.read(documentpath)
         file_id = md5(documentpath.name.encode()).hexdigest()
         filtered_pages = []
@@ -127,6 +87,8 @@ class MainWindow(qtw.QMainWindow):
         else:  # Session.Target.PAGE
             filtered_documents = filtered_pages
 
+        rows = []
+
         # Step 4: Predict and add to dataset
         for page_number, document_text in filtered_documents:
             try:
@@ -137,15 +99,129 @@ class MainWindow(qtw.QMainWindow):
             except NotFittedError:
                 proba = 0.0
                 class_ = 0
-            self.session.dataset.appendRow(
+            rows.append(
                 DataframeTableModel.RowConfig(
                     file_id, page_number, document_text, proba, class_
                 )
             )
+        self.next_document_processed.emit(rows, documentpath)
 
-        # Step 5: Update UI
+
+class MainWindow(qtw.QMainWindow):
+    """The main window of the application."""
+
+    new_session_requested = qtc.pyqtSignal()
+    save_dataset_requested = qtc.pyqtSignal(Session)
+    next_document_requested = qtc.pyqtSignal()
+    session_changed = qtc.pyqtSignal(Session)
+    quit_requested = qtc.pyqtSignal()
+    session: Session = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._next_document_cache: list[DataframeTableModel.RowConfig] = []
+        self._next_document_path: Path = None
+        self._document_processor = DocumentProcessor()
+        self._document_processing_thread = qtc.QThread()
+        self._document_processor.moveToThread(self._document_processing_thread)
+        self._document_processing_thread.start()
+        self._init_ui()
+        self._init_connections()
+
+    def _init_ui(self):
+        """Initialize the user interface."""
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.ui.pdf_view.load(str(QUICK_START_GUIDE_PATH))
+
+    def _init_connections(self):
+        """Initialize connections between signals and slots."""
+
+        # TODO: Should we have these many connections or should we aggregate some of them?
+
+        self.ui.new_session_action.triggered.connect(self.request_new_session)
+        self.ui.save_dataset_action.triggered.connect(self.request_save_dataset)
+        self.ui.exit_action.triggered.connect(self.close)
+
+        self.ui.next_document_button.clicked.connect(self.load_document_from_cache)
+        self.ui.next_document_button.clicked.connect(self.next_document_requested.emit)
+
+        self.next_document_requested.connect(self.deactivate_next_document_button)
+        self.next_document_requested.connect(self.deactivate_refit_pipeline_button)
+
+        self.next_document_requested.connect(
+            self._document_processor.process_next_document
+        )
+        self._document_processor.next_document_processed.connect(
+            self.set_next_document_cache
+        )
+        self._document_processor.next_document_processed.connect(
+            self.activate_next_document_button
+        )
+        self._document_processor.next_document_processed.connect(
+            self.activate_refit_pipeline_button
+        )
+
+        self.session_changed.connect(self._document_processor.set_session)
+        self.ui.refit_pipeline_button.clicked.connect(self.refit_pipeline)
+
+    def closeEvent(self, event: qtc.QEvent):
+        logger.debug("Close event triggered.")
+        event.ignore()
+        self.quit_requested.emit()
+
+    def session_needs_saving(self) -> bool:
+        has_session = self.session is not None
+        if has_session:
+            return not self.session.dataset.is_saved()
+        return False
+
+    @qtc.pyqtSlot(list, Path)
+    def set_next_document_cache(
+        self, rows: list[DataframeTableModel.RowConfig], path: Path
+    ):
+        """Set the cache of processed documents."""
+        self._next_document_cache = rows
+        self._next_document_path = path
+
+    @qtc.pyqtSlot()
+    def request_new_session(self):
+        self.new_session_requested.emit()
+
+    @qtc.pyqtSlot()
+    def request_save_dataset(self):
+        self.save_dataset_requested.emit(self.session)
+
+    @qtc.pyqtSlot()
+    def activate_next_document_button(self):
+        self.ui.next_document_button.setEnabled(True)
+
+    @qtc.pyqtSlot()
+    def deactivate_next_document_button(self):
+        self.ui.next_document_button.setEnabled(False)
+
+    @qtc.pyqtSlot()
+    def activate_refit_pipeline_button(self):
+        self.ui.refit_pipeline_button.setEnabled(True)
+
+    @qtc.pyqtSlot()
+    def deactivate_refit_pipeline_button(self):
+        self.ui.refit_pipeline_button.setEnabled(False)
+
+    def set_session(self, session: Session):
+        """Set the current session."""
+        self.session = session
+        self.ui.sample_list_view.setModel(self.session.sample)
+        self.ui.dataset_table_view.setModel(self.session.dataset)
+        self.session_changed.emit(session)
+        self.next_document_requested.emit()
+
+    @qtc.pyqtSlot(bool)
+    def load_document_from_cache(self, _):
+        for row in self._next_document_cache:
+            self.session.dataset.appendRow(row)
         self.ui.dataset_table_view.scrollToBottom()
-        self.ui.pdf_view.load(str(documentpath))  # Not thread safe
+        self.ui.pdf_view.load(str(self._next_document_path))
 
     # TODO: The following private methods should be part of the
     # widget rather than the main window.

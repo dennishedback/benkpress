@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>825</width>
-    <height>591</height>
+    <width>1007</width>
+    <height>775</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,6 +26,12 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>400</width>
+         <height>0</height>
+        </size>
        </property>
       </widget>
       <widget class="QWidget" name="verticalLayoutWidget">
@@ -102,6 +108,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="refit_pipeline_button">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
                <string>Refit pipeline</string>
               </property>
@@ -113,6 +122,9 @@
         </item>
         <item>
          <widget class="QPushButton" name="next_document_button">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>&gt;&gt;&gt; Next document &gt;&gt;&gt;</string>
           </property>
@@ -129,8 +141,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>825</width>
-     <height>26</height>
+     <width>1007</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="file_menu">
