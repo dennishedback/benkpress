@@ -17,7 +17,6 @@
 """Module containing custom widgets that is not top-level windows or dialogs."""
 
 
-import os.path
 import urllib.parse
 from pathlib import Path
 
@@ -100,9 +99,7 @@ pdfjs = (
     Path(user_data_dir("benkpress", "dennishedback")) / "pdfjs" / "web" / "viewer.html"
 )
 
-# FIXME: Should be able to do this using only pathlib
-
-if not os.path.exists(pdfjs):
+if not pdfjs.exists():
     raise Exception(
         "PDF.js not found",
         "PDF.js not installed in user data directory. Go to "
