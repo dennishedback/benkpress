@@ -43,7 +43,6 @@ class TesseractReader:
         tesseract_language: str,
         dpi: int = 100,
     ):
-        # FIXME: Error handling for incorrect paths
         if tesseract_path:
             pytesseract.pytesseract.tesseract_cmd = tesseract_path
         self.poppler_path = poppler_path
