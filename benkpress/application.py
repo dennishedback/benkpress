@@ -23,16 +23,14 @@ from hashlib import md5
 from pathlib import Path
 from typing import List
 
-import numpy as np
 import PyQt6.QtWidgets as qtw
 from PyQt6 import QtCore as qtc
-from PyQt6 import QtGui as qtg
 from PyQt6 import QtWidgets as qtw
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import auc, classification_report, confusion_matrix, roc_curve
 from sklearn.model_selection import KFold
 
-from benkpress.datamodel import DataframeTableModel, SampleStringStackModel, Session
+from benkpress.datamodel import DataframeTableModel, Session
 from benkpress.plugin import PluginLoader
 from benkpress.resources import QUICK_START_GUIDE_PATH
 from benkpress.ui.mainwindow import Ui_MainWindow
