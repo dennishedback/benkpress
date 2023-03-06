@@ -213,6 +213,7 @@ class MainWindow(qtw.QMainWindow):
         self.session = session
         self.ui.sample_list_view.setModel(self.session.sample)
         self.ui.dataset_table_view.setModel(self.session.dataset)
+        self.session.dataset.rowsInserted.connect(self.update_dataset_size_label)
         self.session_changed.emit(session)
         self.next_document_requested.emit()
 
@@ -222,6 +223,11 @@ class MainWindow(qtw.QMainWindow):
             self.session.dataset.appendRow(row)
         self.ui.dataset_table_view.scrollToBottom()
         self.ui.pdf_view.load(str(self._next_document_path))
+
+    @qtc.pyqtSlot()
+    def update_dataset_size_label(self):
+        """Update the label that displays the size of the dataset."""
+        self.ui.dataset_size_label.setText(f"{self.session.dataset.rowCount()}")
 
     # TODO: The following private methods should be part of the
     # widget rather than the main window.
@@ -481,7 +487,7 @@ class Application(qtw.QApplication):
 
     @qtc.pyqtSlot(Session)
     def show_save_dataset_dialog(self, session: Session):
-        # TODO: Implement saving of session metadata along with the dataset.
+        # TODO: The name of this method is misleading.
         filename, _ = qtw.QFileDialog.getSaveFileName(
             caption="Save dataset",
             filter="All files (*.*);;Comma separated values (*.csv)",
@@ -489,7 +495,7 @@ class Application(qtw.QApplication):
         )
         if filename:
             session.dataset.save(filename)
-            with open(f"{filename}.txt", "w") as f:
+            with open(f"{filename}_log.txt", "w") as f:
                 f.write(session.log_stream.getvalue())
 
 

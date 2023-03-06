@@ -49,6 +49,24 @@
             <item>
              <widget class="QTableView" name="dataset_table_view"/>
             </item>
+            <item>
+             <layout class="QFormLayout" name="formLayout">
+              <item row="0" column="0">
+               <widget class="QLabel" name="dataset_size_descript_label">
+                <property name="text">
+                 <string>Dataset size:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="dataset_size_label">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="sample_tab">
