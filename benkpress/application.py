@@ -19,7 +19,6 @@
 import io
 import logging
 import sys
-from hashlib import md5
 from pathlib import Path
 from typing import List
 
@@ -30,6 +29,7 @@ from sklearn.exceptions import NotFittedError
 from sklearn.metrics import auc, classification_report, confusion_matrix, roc_curve
 from sklearn.model_selection import KFold
 
+from benkpress.api.hash import filename_digest
 from benkpress.datamodel import DataframeTableModel, Session
 from benkpress.plugin import PluginLoader
 from benkpress.resources import QUICK_START_GUIDE_PATH
@@ -64,7 +64,7 @@ class DocumentProcessor(qtc.QObject):
         logger.debug(f"Processing next document: {documentpath}")
         self.processing_started.emit(documentpath)
         read_pages = self.session.reader.read(documentpath)
-        file_id = md5(documentpath.name.encode()).hexdigest()
+        file_id = filename_digest(documentpath)
         filtered_pages = []
 
         # Step 2: Filter pages

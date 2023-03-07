@@ -53,12 +53,14 @@ def filter_sample(source_folder: Path, target_folder: Path, dataset_path: Path):
 
 def main():
     """The main entry point of the script."""
+    # FIXME: Broken since 0.1.3
     args = docopt(__doc__)
     source_folder = Path(args["<src>"])
     target_folder = Path(args["<dst>"])
     dataset_path = Path(args["<dataset>"])
     filter_sample(source_folder, target_folder, dataset_path)
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

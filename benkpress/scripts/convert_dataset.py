@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 # benkpress
 # Copyright (C) 2022 Dennis Hedback
 #
@@ -17,30 +15,32 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-Usage: benkpress-merge-datasets <src1> <src2> <dst>
+Converts the old benkpress dataset format to new format.
+
+Usage: benkpress-convert-dataset <src> <dst>
 
 Options:
     -h --help       Show this help screen.
     -v --version    Show version information.
 """
 
-
 import sys
+from pathlib import Path
 
 import pandas as pd
 from docopt import docopt
 
+from benkpress.api.hash import filename_digest
+
 
 def main():
+    """The main entry point of the script."""
     args = docopt(__doc__)
-    df1 = pd.read_csv(args["<src1>"], index_col=0)
-    df2 = pd.read_csv(args["<src2>"], index_col=0)
-    df1_unique_file_ids = set(df1["file"].unique())
-    df2_unique_file_ids = set(df2["file"].unique())
-    deny_list = df1_unique_file_ids.intersection(df2_unique_file_ids)
-    df2 = df2[~df2["file"].isin(deny_list)]
-    df = pd.concat([df1, df2])
-    df.to_csv(args["<dst>"])
+    source_dataset_path = Path(args["<src>"])
+    destination_dataset_path = Path(args["<dst>"])
+    dataset = pd.read_csv(source_dataset_path, index_col=0)
+    dataset["file"] = dataset["file"].apply(lambda x: filename_digest(Path(x)))
+    dataset.to_csv(destination_dataset_path)
     return 0
 
 

@@ -16,7 +16,7 @@ def get_requirements():
 
 setup(
     name="benkpress",
-    version="0.1.2",
+    version="0.1.3",
     description="PyQt/PDFJs GUI for creating and evaluating classifiers for PDF"
     "file/page/sentence targets using sklearn compatible pipelines",
     long_description=open(THIS_DIR / "README.md").read(),
@@ -32,6 +32,7 @@ setup(
             "benkpress=benkpress.application:main",
             "benkpress-filter-sample=benkpress.scripts.filter_sample:main",
             "benkpress-merge-datasets=benkpress.scripts.merge_datasets:main",
+            "benkpress-convert-dataset=benkpress.scripts.convert_dataset:main",
         ],
         "benkpress_plugins.page_filters": [
             "Passthrough=benkpress.plugin:PassthroughPageClassifier",
